@@ -113,6 +113,12 @@ jobs:
     needs: publish
     runs-on: ubuntu-latest
     steps:
+
+      # Necessary for 3.12, since setuptools was removed there
+      # TODO: Get rid of this once we have a better solution for Python 3.12
+      - name: Install setuptools
+        run: python -m pip install setuptools
+        
       - uses: i2mint/epythet/actions/publish-github-pages@master
         with:
           # IMPORTANT Note: You don't need to specify GITHUB_TOKEN in your repo secrets.
