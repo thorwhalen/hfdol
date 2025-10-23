@@ -22,7 +22,7 @@ This package offers such a `Mapping`-based façade to Hugging Face datasets and 
 This package provides four ready-to-use singleton instances, each offering a dictionary-like interface to different types of HuggingFace resources:
 
 ```python
-import hfdol
+import hfdoldol
 ```
 
 ### Working with Datasets
