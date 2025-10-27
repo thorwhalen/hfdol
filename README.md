@@ -2,6 +2,8 @@
 
 Simple Mapping interface to HuggingFace.
 
+(Note -- was [hf](https://pypi.org/project/hf/0.0.14/) but realeased the name to Huggingface itself for their tool.)
+
 To install:	```pip install hfdol```
 
 You'll also need a Hugginface token. See [more about this here](https://huggingface.co/docs/huggingface_hub/en/quick-start).
