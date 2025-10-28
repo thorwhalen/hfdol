@@ -1,0 +1,567 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hfdol.base &mdash; hfdol 0.1.15 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=e2f3408e"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            hfdol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/hfdol.html">hfdol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/hfdol/base.html">hfdol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/hfdol/tests.html">hfdol.tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/hfdol/tests/test_base.html">hfdol.tests.test_base</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">hfdol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">hfdol.base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for hfdol.base</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Base functionality for hfdol.</span>
+
+<span class="sd">This module provides Mapping-based interfaces to HuggingFace datasets, models, spaces, and papers,</span>
+<span class="sd">allowing you to interact with them using familiar Python dictionary operations.</span>
+
+<span class="sd">Key Classes:</span>
+<span class="sd">- HfDatasets: A Mapping interface for browsing and loading HuggingFace datasets</span>
+<span class="sd">- HfModels: A Mapping interface for browsing and downloading HuggingFace models</span>
+<span class="sd">- HfSpaces: A Mapping interface for browsing and accessing HuggingFace Spaces</span>
+<span class="sd">- HfPapers: A Mapping interface for browsing and accessing HuggingFace Papers</span>
+
+<span class="sd">All classes provide a unified API for local cached items (via iteration and key access)</span>
+<span class="sd">and remote searching/downloading capabilities.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">signature</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">scan_cache_dir</span><span class="p">,</span>
+    <span class="n">snapshot_download</span><span class="p">,</span>
+    <span class="n">HfApi</span><span class="p">,</span>
+    <span class="n">list_models</span><span class="p">,</span>
+    <span class="n">list_datasets</span><span class="p">,</span>
+    <span class="n">list_spaces</span><span class="p">,</span>
+    <span class="n">list_papers</span><span class="p">,</span>
+    <span class="n">space_info</span><span class="p">,</span>
+    <span class="n">paper_info</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub.hf_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetInfo</span><span class="p">,</span> <span class="n">ModelInfo</span><span class="p">,</span> <span class="n">SpaceInfo</span><span class="p">,</span> <span class="n">PaperInfo</span>
+
+
+<div class="viewcode-block" id="RepoType">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.RepoType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RepoType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Valid HuggingFace repository types.&quot;&quot;&quot;</span>
+
+    <span class="n">DATASET</span> <span class="o">=</span> <span class="s1">&#39;dataset&#39;</span>
+    <span class="n">MODEL</span> <span class="o">=</span> <span class="s1">&#39;model&#39;</span>
+    <span class="n">SPACE</span> <span class="o">=</span> <span class="s1">&#39;space&#39;</span>
+    <span class="n">PAPER</span> <span class="o">=</span> <span class="s1">&#39;paper&#39;</span></div>
+
+
+
+<span class="n">DFLT_SIZE_UNIT_BYTES</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="o">**</span><span class="mi">3</span>  <span class="c1"># GiB</span>
+<span class="n">HFAPI_CONFIG</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="sign_kwargs_with">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.sign_kwargs_with">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sign_kwargs_with</span><span class="p">(</span><span class="n">source_func</span><span class="p">,</span> <span class="n">first_arg_index</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Minimal decorator to replace **kwargs with parameters from source_func.</span>
+
+<span class="sd">    :param source_func: Function whose parameters will be injected</span>
+<span class="sd">    :param first_arg_index: Index of first parameter to include from source (default 0)</span>
+
+<span class="sd">    &gt;&gt;&gt; def source(x=0, y=1, z=2): ...</span>
+<span class="sd">    &gt;&gt;&gt; @sign_kwargs_with(source)</span>
+<span class="sd">    ... def target(some, thing=None, **kwargs):</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; str(signature(target))</span>
+<span class="sd">    &#39;(some, thing=None, *, x=0, y=1, z=2)&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; @sign_kwargs_with(source, first_arg_index=1)</span>
+<span class="sd">    ... def target2(some, thing=None, **kwargs):</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; str(signature(target2))</span>
+<span class="sd">    &#39;(some, thing=None, *, y=1, z=2)&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">change_signature_of_variadic</span><span class="p">(</span><span class="n">target_func</span><span class="p">):</span>
+        <span class="n">target_sig</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">target_func</span><span class="p">)</span>
+        <span class="n">source_sig</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">source_func</span><span class="p">)</span>
+
+        <span class="c1"># Get target params without **kwargs</span>
+        <span class="n">target_params</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">target_sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
+        <span class="p">]</span>
+        <span class="n">target_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">target_params</span><span class="p">}</span>
+
+        <span class="c1"># Get source params starting from first_arg_index</span>
+        <span class="n">source_params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">source_sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="n">first_arg_index</span><span class="p">:]</span>
+
+        <span class="c1"># Add source params not in target as keyword-only (preserve VAR_KEYWORD if present)</span>
+        <span class="n">new_params</span> <span class="o">=</span> <span class="n">target_params</span> <span class="o">+</span> <span class="p">[</span>
+            <span class="p">(</span>
+                <span class="n">p</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
+                <span class="k">else</span> <span class="n">p</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">source_params</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">target_names</span>
+        <span class="p">]</span>
+
+        <span class="n">target_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span><span class="n">new_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">target_func</span>
+
+    <span class="k">return</span> <span class="n">change_signature_of_variadic</span></div>
+
+
+
+<span class="c1"># Note: Needs manual work since list_papers doesn&#39;t ressemble other list_* functions</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_list_papers</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper to normalize list_papers interface to use &#39;filter&#39; parameter like other search functions.</span>
+<span class="sd">    Note: list_papers only supports &#39;query&#39; and &#39;token&#39; parameters, so other kwargs are filtered out.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">list_papers</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">)</span>
+
+
+<span class="c1"># Single Source of Truth for repo type configurations</span>
+<span class="n">repo_type_helpers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+        <span class="n">loader_func</span><span class="o">=</span><span class="n">load_dataset</span><span class="p">,</span>
+        <span class="n">search_func</span><span class="o">=</span><span class="n">list_datasets</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">model</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+        <span class="n">loader_func</span><span class="o">=</span><span class="n">snapshot_download</span><span class="p">,</span>
+        <span class="n">search_func</span><span class="o">=</span><span class="n">list_models</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">space</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+        <span class="n">loader_func</span><span class="o">=</span><span class="n">space_info</span><span class="p">,</span>
+        <span class="n">search_func</span><span class="o">=</span><span class="n">list_spaces</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">paper</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+        <span class="n">loader_func</span><span class="o">=</span><span class="n">paper_info</span><span class="p">,</span>
+        <span class="n">search_func</span><span class="o">=</span><span class="n">_list_papers</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+
+<span class="c1"># Note: lru_cache brings HfApi instantiation from 300ns to 30ns.</span>
+<span class="c1">#   Not important, but _get_hf_api also centralizes configured instantiation.</span>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_hf_api</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">HfApi</span><span class="p">(</span><span class="o">**</span><span class="n">HFAPI_CONFIG</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ensure_id</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="n">DatasetInfo</span><span class="p">,</span> <span class="n">ModelInfo</span><span class="p">,</span> <span class="n">SpaceInfo</span><span class="p">,</span> <span class="n">PaperInfo</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot ensure ID from object of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_size">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.get_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_size</span><span class="p">(</span>
+    <span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">unit_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_SIZE_UNIT_BYTES</span><span class="p">,</span> <span class="n">repo_type</span><span class="p">:</span> <span class="n">RepoType</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the total size of a Hugging Face repository (model, dataset, or space) in GiB.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        repo_id (str): The ID of the repository (e.g., &quot;bert-base-uncased&quot;, &quot;MMMU/MMMU&quot;, or &quot;spaces/gradio/chatbot&quot;).</span>
+<span class="sd">        unit_bytes (int): Number of bytes in the desired unit. Default is 1024**3 for GiB. For bytes, enter 1.</span>
+<span class="sd">        repo_type (RepoType): Type of repository (&quot;model&quot;, &quot;dataset&quot;, &quot;space&quot;). Required parameter.</span>
+<span class="sd">                        Papers don&#39;t have file sizes, so they&#39;re not supported.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The total repository size in the specified unit.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If repo_type is &quot;paper&quot; (papers don&#39;t have file sizes) or if repo_type is invalid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert enum to string if needed</span>
+    <span class="n">repo_type_str</span> <span class="o">=</span> <span class="n">repo_type</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">repo_type</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo_type</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">repo_type_str</span> <span class="o">==</span> <span class="s2">&quot;paper&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Papers don&#39;t have file sizes - they are metadata objects&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">repo_type_str</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">repo_type_helpers</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid repo_type: </span><span class="si">{</span><span class="n">repo_type_str</span><span class="si">}</span><span class="s2">. Must be one of: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">repo_type_helpers</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">api</span> <span class="o">=</span> <span class="n">_get_hf_api</span><span class="p">()</span>
+    <span class="n">repo_id</span> <span class="o">=</span> <span class="n">ensure_id</span><span class="p">(</span><span class="n">repo_id</span><span class="p">)</span>
+
+    <span class="c1"># Use repo_type directly based on validation</span>
+    <span class="k">if</span> <span class="n">repo_type_str</span> <span class="o">==</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">model_info</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">files_metadata</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">repo_type_str</span> <span class="o">==</span> <span class="s2">&quot;dataset&quot;</span><span class="p">:</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">dataset_info</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">files_metadata</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">repo_type_str</span> <span class="o">==</span> <span class="s2">&quot;space&quot;</span><span class="p">:</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">space_info</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">files_metadata</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">is_not_none</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">total_size_bytes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="nb">filter</span><span class="p">(</span><span class="n">is_not_none</span><span class="p">,</span> <span class="p">(</span><span class="n">sibling</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">sibling</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">siblings</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">total_size_bytes</span> <span class="o">/</span> <span class="n">unit_bytes</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ensure_dir</span><span class="p">(</span><span class="n">dirpath</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dirpath</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dirpath</span>
+
+
+<div class="viewcode-block" id="list_local_repos">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.list_local_repos">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_local_repos</span><span class="p">(</span><span class="n">repo_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dynamically list locally cached repositories of a given type using scan_cache_dir.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        repo_type (str): The type of repository (&quot;dataset&quot;, &quot;model&quot;, &quot;space&quot;, or &quot;paper&quot;).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: A list of repo IDs for repositories of the specified type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cache_info</span> <span class="o">=</span> <span class="n">scan_cache_dir</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">repo</span><span class="o">.</span><span class="n">repo_id</span> <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="n">cache_info</span><span class="o">.</span><span class="n">repos</span> <span class="k">if</span> <span class="n">repo</span><span class="o">.</span><span class="n">repo_type</span> <span class="o">==</span> <span class="n">repo_type</span><span class="p">]</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_search_method</span><span class="p">(</span><span class="n">search_func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a search method with the signature of the given search_func.&quot;&quot;&quot;</span>
+
+    <span class="nd">@sign_kwargs_with</span><span class="p">(</span><span class="n">search_func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Search for remote repositories that match the query.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filter: Search query string.</span>
+<span class="sd">            **kwargs: Additional search parameters. For details, see below.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Generator of repository info objects.</span>
+
+<span class="sd">        For documentation on search params you can use in `**kwargs`, see:</span>
+<span class="sd">        - datasets: https://huggingface.co/docs/huggingface_hub/package_reference/hf_api#huggingface_hub.HfApi.list_datasets</span>
+<span class="sd">        - models: https://huggingface.co/docs/huggingface_hub/package_reference/hf_api#huggingface_hub.HfApi.list_models</span>
+<span class="sd">        - spaces: https://huggingface.co/docs/huggingface_hub/package_reference/hf_api#huggingface_hub.HfApi.list_spaces</span>
+<span class="sd">        - papers: https://huggingface.co/docs/huggingface_hub/package_reference/hf_api#huggingface_hub.HfApi.list_papers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_func</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">search</span>
+
+
+<div class="viewcode-block" id="HfMapping">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.HfMapping">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HfMapping</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for HuggingFace Mappings.</span>
+
+<span class="sd">    This class provides common functionality for datasets, models, spaces, and papers,</span>
+<span class="sd">    parameterized by repo_type which determines loader_func and search_func.</span>
+
+<span class="sd">    Can be used in two ways:</span>
+<span class="sd">    1. Via subclasses (HfDatasets, HfModels, etc.) for common types - best UX</span>
+<span class="sd">    2. Via direct parameterization for less common types or dynamic use</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">repo_type</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># To be overridden in subclasses</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo_type</span><span class="p">:</span> <span class="n">RepoType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Support both parameterized usage and subclass usage</span>
+        <span class="k">if</span> <span class="n">repo_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Convert enum to string value or use string directly</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">repo_type</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">repo_type</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo_type</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;repo_type must be defined in subclass or passed to constructor&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Convert class attribute enum to string if needed</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">)</span>
+                <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">repo_type_helpers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported repo_type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get configuration from SSOT</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">repo_type_helpers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader_func</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loader_func&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_func</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;search_func&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Create search method with correct signature and bind it to this instance</span>
+        <span class="n">search_method</span> <span class="o">=</span> <span class="n">_create_search_method</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;search_func&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search</span> <span class="o">=</span> <span class="n">search_method</span><span class="o">.</span><span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load/download an item using the configured loader function.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loader_func</span><span class="p">(</span><span class="n">ensure_id</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of local repository IDs of the configured type.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">list_local_repos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterate through keys to local repositories.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of local repositories.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">())</span>
+
+<div class="viewcode-block" id="HfMapping.get_size">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.HfMapping.get_size">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">unit_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_SIZE_UNIT_BYTES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get size (by default, in GiB) of an item from it&#39;s key (repo ID)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">get_size</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">unit_bytes</span><span class="o">=</span><span class="n">unit_bytes</span><span class="p">,</span> <span class="n">repo_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="p">)</span></div>
+</div>
+
+
+    <span class="c1"># Note: search method is dynamically created in __init__ with the correct signature</span>
+
+
+<div class="viewcode-block" id="HfDatasets">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.HfDatasets">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HfDatasets</span><span class="p">(</span><span class="n">HfMapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Mapping interface to HuggingFace datasets.</span>
+
+<span class="sd">    Provides dictionary-like access to locally cached datasets and seamless</span>
+<span class="sd">    downloading of remote datasets. Keys are dataset repository IDs (e.g., &#39;stingning/ultrachat&#39;).</span>
+<span class="sd">    Values are loaded dataset objects from the datasets library.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; d = HfDatasets()</span>
+
+<span class="sd">    List locally cached datasets:</span>
+
+<span class="sd">    &gt;&gt;&gt; list_of_dataset_repo_ids = list(d)</span>
+
+<span class="sd">    Search remote datasets</span>
+
+<span class="sd">    &gt;&gt;&gt; results = d.search(&#39;music&#39;, gated=False)  # doctest: +SKIP</span>
+
+<span class="sd">    Load or download a dataset</span>
+
+<span class="sd">    &gt;&gt;&gt; data = d[&#39;some/dataset&#39;]  # doctest: +SKIP</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">repo_type</span> <span class="o">=</span> <span class="n">RepoType</span><span class="o">.</span><span class="n">DATASET</span></div>
+
+
+
+<div class="viewcode-block" id="HfModels">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.HfModels">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HfModels</span><span class="p">(</span><span class="n">HfMapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Mapping interface to HuggingFace models.</span>
+
+<span class="sd">    Provides dictionary-like access to locally cached models and seamless</span>
+<span class="sd">    downloading of remote models. Keys are model repository IDs (e.g., &#39;sentence-transformers/all-MiniLM-L6-v2&#39;).</span>
+<span class="sd">    Values are file paths to the downloaded model directories.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; m = HfModels()</span>
+
+<span class="sd">    List locally cached models</span>
+
+<span class="sd">    &gt;&gt;&gt; list_of_model_repo_ids = list(m)</span>
+
+<span class="sd">    Search remote models</span>
+
+<span class="sd">    &gt;&gt;&gt; results = m.search(&#39;embeddings&#39;, gated=False)  # doctest: +SKIP</span>
+
+<span class="sd">    Download or get path to a model</span>
+
+<span class="sd">    &gt;&gt;&gt; model_path = m[&#39;some/model&#39;]  # doctest: +SKIP</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">repo_type</span> <span class="o">=</span> <span class="n">RepoType</span><span class="o">.</span><span class="n">MODEL</span></div>
+
+
+
+<div class="viewcode-block" id="HfSpaces">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.HfSpaces">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HfSpaces</span><span class="p">(</span><span class="n">HfMapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Mapping interface to HuggingFace Spaces.</span>
+
+<span class="sd">    Provides dictionary-like access to locally cached spaces and seamless</span>
+<span class="sd">    retrieval of remote space information. Keys are space repository IDs (e.g., &#39;gradio/chatbot&#39;).</span>
+<span class="sd">    Values are SpaceInfo objects containing space metadata and configuration.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; s = HfSpaces()</span>
+
+<span class="sd">    List locally cached spaces</span>
+
+<span class="sd">    &gt;&gt;&gt; list_of_space_repo_ids = list(s)</span>
+
+<span class="sd">    Search remote spaces</span>
+
+<span class="sd">    &gt;&gt;&gt; results = s.search(&#39;gradio&#39;, gated=False)  # doctest: +SKIP</span>
+
+<span class="sd">    Get information about a space</span>
+
+<span class="sd">    &gt;&gt;&gt; space_info = s[&#39;gradio/chatbot&#39;]  # doctest: +SKIP</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">repo_type</span> <span class="o">=</span> <span class="n">RepoType</span><span class="o">.</span><span class="n">SPACE</span></div>
+
+
+
+<div class="viewcode-block" id="HfPapers">
+<a class="viewcode-back" href="../../module_docs/hfdol/base.html#hfdol.base.HfPapers">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HfPapers</span><span class="p">(</span><span class="n">HfMapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Mapping interface to HuggingFace Papers.</span>
+
+<span class="sd">    Provides dictionary-like access to paper information. Keys are paper IDs.</span>
+<span class="sd">    Values are PaperInfo objects containing paper metadata, abstracts, and links.</span>
+
+<span class="sd">    Note: Papers are metadata objects only - they don&#39;t have downloadable files or sizes.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; p = HfPapers()</span>
+
+<span class="sd">    Search papers</span>
+
+<span class="sd">    &gt;&gt;&gt; results = p.search(&#39;transformer&#39;)  # doctest: +SKIP</span>
+
+<span class="sd">    Get information about a paper</span>
+
+<span class="sd">    &gt;&gt;&gt; paper_info = p[&#39;2017.12345&#39;]  # doctest: +SKIP</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">repo_type</span> <span class="o">=</span> <span class="n">RepoType</span><span class="o">.</span><span class="n">PAPER</span></div>
+
+
+
+<span class="c1"># ------------------------------------------------------------------------------------</span>
+<span class="c1"># Convenience instances (lowercase by convention)</span>
+<span class="n">datasets</span> <span class="o">=</span> <span class="n">HfDatasets</span><span class="p">()</span>
+<span class="n">models</span> <span class="o">=</span> <span class="n">HfModels</span><span class="p">()</span>
+<span class="n">spaces</span> <span class="o">=</span> <span class="n">HfSpaces</span><span class="p">()</span>
+<span class="n">papers</span> <span class="o">=</span> <span class="n">HfPapers</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

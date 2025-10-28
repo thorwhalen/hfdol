@@ -1,0 +1,4 @@
+hfdol.tests
+===========
+.. automodule:: hfdol.tests
+   :members:

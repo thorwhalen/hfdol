@@ -1,0 +1,331 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hfdol.base &mdash; hfdol 0.1.15 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=e2f3408e"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="hfdol.tests" href="tests.html" />
+    <link rel="prev" title="hfdol" href="../hfdol.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            hfdol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../hfdol.html">hfdol</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">hfdol.base</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.base.HfDatasets"><code class="docutils literal notranslate"><span class="pre">HfDatasets</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.base.HfMapping"><code class="docutils literal notranslate"><span class="pre">HfMapping</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hfdol.base.HfMapping.get_size"><code class="docutils literal notranslate"><span class="pre">HfMapping.get_size()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.base.HfModels"><code class="docutils literal notranslate"><span class="pre">HfModels</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.base.HfPapers"><code class="docutils literal notranslate"><span class="pre">HfPapers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.base.HfSpaces"><code class="docutils literal notranslate"><span class="pre">HfSpaces</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.base.RepoType"><code class="docutils literal notranslate"><span class="pre">RepoType</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.base.get_size"><code class="docutils literal notranslate"><span class="pre">get_size()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.base.list_local_repos"><code class="docutils literal notranslate"><span class="pre">list_local_repos()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.base.sign_kwargs_with"><code class="docutils literal notranslate"><span class="pre">sign_kwargs_with()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tests.html">hfdol.tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_base.html">hfdol.tests.test_base</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">hfdol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">hfdol.base</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/hfdol/base.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-hfdol.base">
+<span id="hfdol-base"></span><h1>hfdol.base<a class="headerlink" href="#module-hfdol.base" title="Link to this heading"></a></h1>
+<p>Base functionality for hfdol.</p>
+<p>This module provides Mapping-based interfaces to HuggingFace datasets, models, spaces, and papers,
+allowing you to interact with them using familiar Python dictionary operations.</p>
+<p>Key Classes:
+- HfDatasets: A Mapping interface for browsing and loading HuggingFace datasets
+- HfModels: A Mapping interface for browsing and downloading HuggingFace models
+- HfSpaces: A Mapping interface for browsing and accessing HuggingFace Spaces
+- HfPapers: A Mapping interface for browsing and accessing HuggingFace Papers</p>
+<p>All classes provide a unified API for local cached items (via iteration and key access)
+and remote searching/downloading capabilities.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfdol.base.HfDatasets">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfdol.base.</span></span><span class="sig-name descname"><span class="pre">HfDatasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#hfdol.base.RepoType" title="hfdol.base.RepoType"><span class="pre">RepoType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/base.html#HfDatasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.HfDatasets" title="Link to this definition"></a></dt>
+<dd><p>A Mapping interface to HuggingFace datasets.</p>
+<p>Provides dictionary-like access to locally cached datasets and seamless
+downloading of remote datasets. Keys are dataset repository IDs (e.g., ‘stingning/ultrachat’).
+Values are loaded dataset objects from the datasets library.</p>
+<p>Examples:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">HfDatasets</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>List locally cached datasets:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">list_of_dataset_repo_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Search remote datasets</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;music&#39;</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  
+</pre></div>
+</div>
+<p>Load or download a dataset</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;some/dataset&#39;</span><span class="p">]</span>  
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hfdol.base.HfMapping">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfdol.base.</span></span><span class="sig-name descname"><span class="pre">HfMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#hfdol.base.RepoType" title="hfdol.base.RepoType"><span class="pre">RepoType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/base.html#HfMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.HfMapping" title="Link to this definition"></a></dt>
+<dd><p>Abstract base class for HuggingFace Mappings.</p>
+<p>This class provides common functionality for datasets, models, spaces, and papers,
+parameterized by repo_type which determines loader_func and search_func.</p>
+<p>Can be used in two ways:
+1. Via subclasses (HfDatasets, HfModels, etc.) for common types - best UX
+2. Via direct parameterization for less common types or dynamic use</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfdol.base.HfMapping.get_size">
+<span class="sig-name descname"><span class="pre">get_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1073741824</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/hfdol/base.html#HfMapping.get_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.HfMapping.get_size" title="Link to this definition"></a></dt>
+<dd><p>Get size (by default, in GiB) of an item from it’s key (repo ID)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hfdol.base.HfModels">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfdol.base.</span></span><span class="sig-name descname"><span class="pre">HfModels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#hfdol.base.RepoType" title="hfdol.base.RepoType"><span class="pre">RepoType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/base.html#HfModels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.HfModels" title="Link to this definition"></a></dt>
+<dd><p>A Mapping interface to HuggingFace models.</p>
+<p>Provides dictionary-like access to locally cached models and seamless
+downloading of remote models. Keys are model repository IDs (e.g., ‘sentence-transformers/all-MiniLM-L6-v2’).
+Values are file paths to the downloaded model directories.</p>
+<p>Examples:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">HfModels</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>List locally cached models</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">list_of_model_repo_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Search remote models</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;embeddings&#39;</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  
+</pre></div>
+</div>
+<p>Download or get path to a model</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model_path</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;some/model&#39;</span><span class="p">]</span>  
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hfdol.base.HfPapers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfdol.base.</span></span><span class="sig-name descname"><span class="pre">HfPapers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#hfdol.base.RepoType" title="hfdol.base.RepoType"><span class="pre">RepoType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/base.html#HfPapers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.HfPapers" title="Link to this definition"></a></dt>
+<dd><p>A Mapping interface to HuggingFace Papers.</p>
+<p>Provides dictionary-like access to paper information. Keys are paper IDs.
+Values are PaperInfo objects containing paper metadata, abstracts, and links.</p>
+<p>Note: Papers are metadata objects only - they don’t have downloadable files or sizes.</p>
+<p>Examples:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">HfPapers</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Search papers</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;transformer&#39;</span><span class="p">)</span>  
+</pre></div>
+</div>
+<p>Get information about a paper</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">paper_info</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;2017.12345&#39;</span><span class="p">]</span>  
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hfdol.base.HfSpaces">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfdol.base.</span></span><span class="sig-name descname"><span class="pre">HfSpaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#hfdol.base.RepoType" title="hfdol.base.RepoType"><span class="pre">RepoType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/base.html#HfSpaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.HfSpaces" title="Link to this definition"></a></dt>
+<dd><p>A Mapping interface to HuggingFace Spaces.</p>
+<p>Provides dictionary-like access to locally cached spaces and seamless
+retrieval of remote space information. Keys are space repository IDs (e.g., ‘gradio/chatbot’).
+Values are SpaceInfo objects containing space metadata and configuration.</p>
+<p>Examples:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">HfSpaces</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>List locally cached spaces</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">list_of_space_repo_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Search remote spaces</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;gradio&#39;</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  
+</pre></div>
+</div>
+<p>Get information about a space</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">space_info</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;gradio/chatbot&#39;</span><span class="p">]</span>  
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hfdol.base.RepoType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfdol.base.</span></span><span class="sig-name descname"><span class="pre">RepoType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/base.html#RepoType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.RepoType" title="Link to this definition"></a></dt>
+<dd><p>Valid HuggingFace repository types.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.base.get_size">
+<span class="sig-prename descclassname"><span class="pre">hfdol.base.</span></span><span class="sig-name descname"><span class="pre">get_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1073741824</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repo_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#hfdol.base.RepoType" title="hfdol.base.RepoType"><span class="pre">RepoType</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/hfdol/base.html#get_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.get_size" title="Link to this definition"></a></dt>
+<dd><p>Calculates the total size of a Hugging Face repository (model, dataset, or space) in GiB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_id</strong> (<em>str</em>) – The ID of the repository (e.g., “bert-base-uncased”, “MMMU/MMMU”, or “spaces/gradio/chatbot”).</p></li>
+<li><p><strong>unit_bytes</strong> (<em>int</em>) – Number of bytes in the desired unit. Default is 1024**3 for GiB. For bytes, enter 1.</p></li>
+<li><p><strong>repo_type</strong> (<a class="reference internal" href="#hfdol.base.RepoType" title="hfdol.base.RepoType"><em>RepoType</em></a>) – Type of repository (“model”, “dataset”, “space”). Required parameter.
+Papers don’t have file sizes, so they’re not supported.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The total repository size in the specified unit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If repo_type is “paper” (papers don’t have file sizes) or if repo_type is invalid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.base.list_local_repos">
+<span class="sig-prename descclassname"><span class="pre">hfdol.base.</span></span><span class="sig-name descname"><span class="pre">list_local_repos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/base.html#list_local_repos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.list_local_repos" title="Link to this definition"></a></dt>
+<dd><p>Dynamically list locally cached repositories of a given type using scan_cache_dir.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>repo_type</strong> (<em>str</em>) – The type of repository (“dataset”, “model”, “space”, or “paper”).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of repo IDs for repositories of the specified type.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.base.sign_kwargs_with">
+<span class="sig-prename descclassname"><span class="pre">hfdol.base.</span></span><span class="sig-name descname"><span class="pre">sign_kwargs_with</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_arg_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/base.html#sign_kwargs_with"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.base.sign_kwargs_with" title="Link to this definition"></a></dt>
+<dd><p>Minimal decorator to replace <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs with parameters from source_func.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_func</strong> – Function whose parameters will be injected</p></li>
+<li><p><strong>first_arg_index</strong> – Index of first parameter to include from source (default 0)</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">source</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@sign_kwargs_with</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">target</span><span class="p">(</span><span class="n">some</span><span class="p">,</span> <span class="n">thing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">target</span><span class="p">))</span>
+<span class="go">&#39;(some, thing=None, *, x=0, y=1, z=2)&#39;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@sign_kwargs_with</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">first_arg_index</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">target2</span><span class="p">(</span><span class="n">some</span><span class="p">,</span> <span class="n">thing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">target2</span><span class="p">))</span>
+<span class="go">&#39;(some, thing=None, *, y=1, z=2)&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../hfdol.html" class="btn btn-neutral float-left" title="hfdol" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tests.html" class="btn btn-neutral float-right" title="hfdol.tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
