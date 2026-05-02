@@ -1,0 +1,665 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hfdol.deploy &mdash; hfdol 0.1.15 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=e2f3408e"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            hfdol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/hfdol.html">hfdol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/hfdol/base.html">hfdol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/hfdol/deploy.html">hfdol.deploy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/hfdol/tests.html">hfdol.tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/hfdol/tests/test_base.html">hfdol.tests.test_base</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">hfdol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">hfdol.deploy</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for hfdol.deploy</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Deploy webapps to HuggingFace Spaces.</span>
+
+<span class="sd">This module wraps `huggingface_hub` with opinionated, idempotent helpers for</span>
+<span class="sd">publishing a Python package&#39;s webapp to a Docker-SDK Space. The primary entry</span>
+<span class="sd">point is :func:`deploy_webapp`, which composes the smaller helpers into a</span>
+<span class="sd">full create-or-update + restart cycle.</span>
+
+<span class="sd">Functions are designed to be composable: each does one thing, fails loudly,</span>
+<span class="sd">and prints what it&#39;s about to do. The module assumes you already have a</span>
+<span class="sd">package on PyPI (or a Dockerfile that knows how to install it).</span>
+
+<span class="sd">Quick reference:</span>
+
+<span class="sd">    &gt;&gt;&gt; from hfdol.deploy import deploy_webapp  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; deploy_webapp(                          # doctest: +SKIP</span>
+<span class="sd">    ...     repo_id=&quot;thorwhalen/typola&quot;,</span>
+<span class="sd">    ...     source_dir=&quot;/path/to/staging&quot;,</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">For ad-hoc operations:</span>
+
+<span class="sd">    &gt;&gt;&gt; from hfdol.deploy import factory_reboot, wait_for_build  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; factory_reboot(&quot;thorwhalen/typola&quot;)     # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; wait_for_build(&quot;thorwhalen/typola&quot;)     # doctest: +SKIP</span>
+
+<span class="sd">Token resolution: Operations need a write-scoped HF token. By default,</span>
+<span class="sd">:func:`ensure_write_token` reads ``HF_WRITE_TOKEN`` from the environment, then</span>
+<span class="sd">falls back to sourcing ``~/.keys`` (a shell file that exports it). If you keep</span>
+<span class="sd">your write token elsewhere, pass ``token=...`` to any function explicitly.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span>
+
+
+<span class="n">DFLT_KEYS_FILE</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.keys&quot;</span>
+<span class="n">DFLT_TOKEN_VAR</span> <span class="o">=</span> <span class="s2">&quot;HF_WRITE_TOKEN&quot;</span>
+<span class="n">DFLT_BUILD_TIMEOUT</span> <span class="o">=</span> <span class="mi">900</span>  <span class="c1"># 15 minutes — typical Docker build is 2-5 min</span>
+<span class="n">DFLT_POLL_INTERVAL</span> <span class="o">=</span> <span class="mi">15</span>  <span class="c1"># seconds between space_info polls</span>
+<span class="n">DFLT_DOCKER_PORT</span> <span class="o">=</span> <span class="mi">7860</span>  <span class="c1"># HF Spaces convention for Docker SDK</span>
+<span class="n">DFLT_IGNORE_PATTERNS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;node_modules/**&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;__pycache__/**&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;*.pyc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;.DS_Store&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;.git/**&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Token handling</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="ensure_write_token">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.ensure_write_token">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ensure_write_token</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">env_var</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_TOKEN_VAR</span><span class="p">,</span>
+    <span class="n">keys_file</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">=</span> <span class="n">DFLT_KEYS_FILE</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a write-scoped HF token; source ``~/.keys`` if needed.</span>
+
+<span class="sd">    HF Spaces operations (create, upload, restart) need a write token. The</span>
+<span class="sd">    default ``HF_TOKEN`` is often read-only. Convention: keep the write token</span>
+<span class="sd">    in ``~/.keys`` as ``export HF_WRITE_TOKEN=hf_...``.</span>
+
+<span class="sd">    :param env_var: Environment variable name to read first.</span>
+<span class="sd">    :param keys_file: Shell file to source as fallback (must export ``env_var``).</span>
+<span class="sd">    :returns: The token string.</span>
+<span class="sd">    :raises SystemExit: If no token can be resolved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tok</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">env_var</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tok</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tok</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">keys_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">env_var</span><span class="si">}</span><span class="s2"> not set and </span><span class="si">{</span><span class="n">keys_file</span><span class="si">}</span><span class="s2"> does not exist. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Either export </span><span class="si">{</span><span class="n">env_var</span><span class="si">}</span><span class="s2">=... or create </span><span class="si">{</span><span class="n">keys_file</span><span class="si">}</span><span class="s2"> with that line.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;bash&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;source </span><span class="si">{</span><span class="n">keys_file</span><span class="si">}</span><span class="s2"> &amp;&amp; printf &#39;%s&#39; </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{</span><span class="n">env_var</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">],</span>
+        <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">stdout</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">out</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">keys_file</span><span class="si">}</span><span class="s2"> does not export </span><span class="si">{</span><span class="n">env_var</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Add a line like: export </span><span class="si">{</span><span class="n">env_var</span><span class="si">}</span><span class="s2">=hf_...&quot;</span>
+        <span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">env_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_token</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve token argument: explicit value wins, else fall back to env/keys.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">token</span> <span class="k">if</span> <span class="n">token</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ensure_write_token</span><span class="p">()</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Space lifecycle</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="create_or_update_space">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.create_or_update_space">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_or_update_space</span><span class="p">(</span>
+    <span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">sdk</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;docker&quot;</span><span class="p">,</span>
+    <span class="n">private</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">exist_ok</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an HF Space if it doesn&#39;t exist; otherwise return its info.</span>
+
+<span class="sd">    Idempotent. Safe to call before every deploy.</span>
+
+<span class="sd">    :param repo_id: ``owner/space-name``.</span>
+<span class="sd">    :param sdk: Space SDK — ``docker`` (recommended for custom apps),</span>
+<span class="sd">        ``gradio``, ``streamlit``, ``static``.</span>
+<span class="sd">    :param private: If True, create as private (only matters on first creation).</span>
+<span class="sd">    :param token: Write token; defaults to :func:`ensure_write_token`.</span>
+<span class="sd">    :param exist_ok: If True (default), an already-existing repo is fine.</span>
+<span class="sd">    :returns: ``SpaceInfo`` for the (now-existing) Space.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfApi</span><span class="p">,</span> <span class="n">create_repo</span>
+
+    <span class="n">tok</span> <span class="o">=</span> <span class="n">_resolve_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">HfApi</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">tok</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ensuring Space </span><span class="si">{</span><span class="n">repo_id</span><span class="si">}</span><span class="s2"> exists (sdk=</span><span class="si">{</span><span class="n">sdk</span><span class="si">}</span><span class="s2">) ...&quot;</span><span class="p">)</span>
+    <span class="n">create_repo</span><span class="p">(</span>
+        <span class="n">repo_id</span><span class="o">=</span><span class="n">repo_id</span><span class="p">,</span>
+        <span class="n">repo_type</span><span class="o">=</span><span class="s2">&quot;space&quot;</span><span class="p">,</span>
+        <span class="n">space_sdk</span><span class="o">=</span><span class="n">sdk</span><span class="p">,</span>
+        <span class="n">private</span><span class="o">=</span><span class="n">private</span><span class="p">,</span>
+        <span class="n">token</span><span class="o">=</span><span class="n">tok</span><span class="p">,</span>
+        <span class="n">exist_ok</span><span class="o">=</span><span class="n">exist_ok</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">space_info</span><span class="p">(</span><span class="n">repo_id</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="upload_app_dir">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.upload_app_dir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">upload_app_dir</span><span class="p">(</span>
+    <span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">folder_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Update app contents&quot;</span><span class="p">,</span>
+    <span class="n">token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ignore_patterns</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DFLT_IGNORE_PATTERNS</span><span class="p">,</span>
+    <span class="n">delete_patterns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Upload a local folder to an HF Space, replacing the live files.</span>
+
+<span class="sd">    Wraps :func:`huggingface_hub.HfApi.upload_folder` with sensible ignore</span>
+<span class="sd">    patterns and a printed plan. Existing files on the Space that are not in</span>
+<span class="sd">    the local folder are NOT deleted unless you pass ``delete_patterns``.</span>
+
+<span class="sd">    :param repo_id: ``owner/space-name``.</span>
+<span class="sd">    :param folder_path: Local directory to upload.</span>
+<span class="sd">    :param message: Commit message on the Space repo.</span>
+<span class="sd">    :param token: Write token; defaults to :func:`ensure_write_token`.</span>
+<span class="sd">    :param ignore_patterns: Glob patterns to skip.</span>
+<span class="sd">    :param delete_patterns: Optional glob patterns of remote files to delete</span>
+<span class="sd">        before upload (e.g., ``[&quot;webapp/ui/dist/**&quot;]`` to ensure stale build</span>
+<span class="sd">        artifacts are removed).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfApi</span>
+
+    <span class="n">folder_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">folder_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Source folder does not exist: </span><span class="si">{</span><span class="n">folder_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">api</span> <span class="o">=</span> <span class="n">HfApi</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">_resolve_token</span><span class="p">(</span><span class="n">token</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Uploading </span><span class="si">{</span><span class="n">folder_path</span><span class="si">}</span><span class="s2"> → space </span><span class="si">{</span><span class="n">repo_id</span><span class="si">}</span><span class="s2"> ...&quot;</span><span class="p">)</span>
+    <span class="n">api</span><span class="o">.</span><span class="n">upload_folder</span><span class="p">(</span>
+        <span class="n">folder_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">folder_path</span><span class="p">),</span>
+        <span class="n">repo_id</span><span class="o">=</span><span class="n">repo_id</span><span class="p">,</span>
+        <span class="n">repo_type</span><span class="o">=</span><span class="s2">&quot;space&quot;</span><span class="p">,</span>
+        <span class="n">commit_message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+        <span class="n">ignore_patterns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">ignore_patterns</span><span class="p">),</span>
+        <span class="n">delete_patterns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">delete_patterns</span><span class="p">)</span> <span class="k">if</span> <span class="n">delete_patterns</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Upload complete.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="factory_reboot">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.factory_reboot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">factory_reboot</span><span class="p">(</span><span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger a from-scratch rebuild of the Space (busts Docker layer cache).</span>
+
+<span class="sd">    A normal restart reuses cached Docker layers. A factory reboot blows the</span>
+<span class="sd">    cache away — required when ``pip install`` should re-fetch a new package</span>
+<span class="sd">    version, or when system deps in the Dockerfile changed.</span>
+
+<span class="sd">    :param repo_id: ``owner/space-name``.</span>
+<span class="sd">    :param token: Write token; defaults to :func:`ensure_write_token`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfApi</span>
+
+    <span class="n">api</span> <span class="o">=</span> <span class="n">HfApi</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">_resolve_token</span><span class="p">(</span><span class="n">token</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Triggering factory reboot of </span><span class="si">{</span><span class="n">repo_id</span><span class="si">}</span><span class="s2"> ...&quot;</span><span class="p">)</span>
+    <span class="n">api</span><span class="o">.</span><span class="n">restart_space</span><span class="p">(</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">factory_reboot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reboot signaled. Logs: https://huggingface.co/spaces/</span><span class="si">{</span><span class="n">repo_id</span><span class="si">}</span><span class="s2">/logs&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="BuildResult">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.BuildResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BuildResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Outcome of waiting for a Space build.&quot;&quot;&quot;</span>
+
+    <span class="n">final_stage</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">elapsed_seconds</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">timed_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">stages_seen</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">succeeded</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_stage</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;RUNNING&quot;</span><span class="p">,</span> <span class="s2">&quot;RUNNING_BUILDING&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="wait_for_build">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.wait_for_build">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">wait_for_build</span><span class="p">(</span>
+    <span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_BUILD_TIMEOUT</span><span class="p">,</span>
+    <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_POLL_INTERVAL</span><span class="p">,</span>
+    <span class="n">on_stage_change</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BuildResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Poll Space status until it lands in a terminal state or times out.</span>
+
+<span class="sd">    Terminal states: ``RUNNING``, ``RUNNING_BUILDING`` (success); ``BUILD_ERROR``,</span>
+<span class="sd">    ``RUNTIME_ERROR`` (failure). Times out after ``timeout`` seconds.</span>
+
+<span class="sd">    :param repo_id: ``owner/space-name``.</span>
+<span class="sd">    :param token: Write token (read access also fine); defaults to env.</span>
+<span class="sd">    :param timeout: Max seconds to wait.</span>
+<span class="sd">    :param poll_interval: Seconds between polls.</span>
+<span class="sd">    :param on_stage_change: Callback ``(stage, elapsed_seconds) -&gt; None``</span>
+<span class="sd">        invoked each time the stage transitions. Default prints to stdout.</span>
+<span class="sd">    :returns: :class:`BuildResult`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfApi</span>
+
+    <span class="n">api</span> <span class="o">=</span> <span class="n">HfApi</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">_resolve_token</span><span class="p">(</span><span class="n">token</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">on_stage_change</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">on_stage_change</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">stage</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  t=</span><span class="si">{</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">s stage=</span><span class="si">{</span><span class="n">stage</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timeout</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">seen</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">started</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">deadline</span><span class="p">:</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">space_info</span><span class="p">(</span><span class="n">repo_id</span><span class="p">)</span>
+        <span class="n">stage</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">stage</span>
+        <span class="k">if</span> <span class="n">stage</span> <span class="o">!=</span> <span class="n">last</span><span class="p">:</span>
+            <span class="n">elapsed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">started</span><span class="p">)</span>
+            <span class="n">on_stage_change</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">)</span>
+            <span class="n">seen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+            <span class="n">last</span> <span class="o">=</span> <span class="n">stage</span>
+        <span class="k">if</span> <span class="n">stage</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;RUNNING&quot;</span><span class="p">,</span> <span class="s2">&quot;RUNNING_BUILDING&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">BuildResult</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">started</span><span class="p">),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">seen</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stage</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;BUILD_ERROR&quot;</span><span class="p">,</span> <span class="s2">&quot;RUNTIME_ERROR&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">BuildResult</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">started</span><span class="p">),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">seen</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">poll_interval</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">BuildResult</span><span class="p">(</span><span class="n">last</span> <span class="ow">or</span> <span class="s2">&quot;UNKNOWN&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">started</span><span class="p">),</span> <span class="kc">True</span><span class="p">,</span> <span class="n">seen</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Composed workflow</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="deploy_webapp">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.deploy_webapp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">deploy_webapp</span><span class="p">(</span>
+    <span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">source_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">sdk</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;docker&quot;</span><span class="p">,</span>
+    <span class="n">private</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Deploy webapp&quot;</span><span class="p">,</span>
+    <span class="n">ignore_patterns</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DFLT_IGNORE_PATTERNS</span><span class="p">,</span>
+    <span class="n">delete_patterns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rebuild</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_BUILD_TIMEOUT</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BuildResult</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;End-to-end: create-if-missing → upload → factory reboot → wait for build.</span>
+
+<span class="sd">    The most common deploy entry point. ``source_dir`` should contain</span>
+<span class="sd">    everything that goes on the Space repo: ``Dockerfile``, ``README.md``</span>
+<span class="sd">    (with HF YAML frontmatter), and your app source (e.g., ``webapp/api/``,</span>
+<span class="sd">    ``webapp/ui/dist/``).</span>
+
+<span class="sd">    :param repo_id: ``owner/space-name``.</span>
+<span class="sd">    :param source_dir: Local staging directory.</span>
+<span class="sd">    :param sdk: Space SDK (only matters on first creation).</span>
+<span class="sd">    :param private: Create as private (only matters on first creation).</span>
+<span class="sd">    :param token: Write token; defaults to :func:`ensure_write_token`.</span>
+<span class="sd">    :param message: Commit message.</span>
+<span class="sd">    :param ignore_patterns: Glob patterns to skip during upload.</span>
+<span class="sd">    :param delete_patterns: Glob patterns to delete from the Space before</span>
+<span class="sd">        uploading (e.g., to clear stale build artifacts).</span>
+<span class="sd">    :param rebuild: If True (default), trigger a factory reboot after upload.</span>
+<span class="sd">        Set False to skip — useful when only README/metadata changed.</span>
+<span class="sd">    :param wait: If True (default), poll until the build settles.</span>
+<span class="sd">    :param timeout: Max seconds to wait for the build.</span>
+<span class="sd">    :returns: :class:`BuildResult` if ``wait=True``, else ``None``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tok</span> <span class="o">=</span> <span class="n">_resolve_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+    <span class="n">create_or_update_space</span><span class="p">(</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">sdk</span><span class="o">=</span><span class="n">sdk</span><span class="p">,</span> <span class="n">private</span><span class="o">=</span><span class="n">private</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">tok</span><span class="p">)</span>
+    <span class="n">upload_app_dir</span><span class="p">(</span>
+        <span class="n">repo_id</span><span class="p">,</span>
+        <span class="n">source_dir</span><span class="p">,</span>
+        <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+        <span class="n">token</span><span class="o">=</span><span class="n">tok</span><span class="p">,</span>
+        <span class="n">ignore_patterns</span><span class="o">=</span><span class="n">ignore_patterns</span><span class="p">,</span>
+        <span class="n">delete_patterns</span><span class="o">=</span><span class="n">delete_patterns</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rebuild</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">factory_reboot</span><span class="p">(</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">tok</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">wait</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">wait_for_build</span><span class="p">(</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">tok</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="n">space_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="n">repo_id</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.hf.space/&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Space is live: </span><span class="si">{</span><span class="n">space_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">result</span><span class="o">.</span><span class="n">timed_out</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Timeout after </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">elapsed_seconds</span><span class="si">}</span><span class="s2">s (still </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">final_stage</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Build failed: stage=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">final_stage</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Logs: https://huggingface.co/spaces/</span><span class="si">{</span><span class="n">repo_id</span><span class="si">}</span><span class="s2">/logs&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Dockerfile templates</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="render_pypi_webapp_dockerfile">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.render_pypi_webapp_dockerfile">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">render_pypi_webapp_dockerfile</span><span class="p">(</span>
+    <span class="n">package</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">extras</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;web&quot;</span><span class="p">,</span>
+    <span class="n">version_spec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">python_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;3.12&quot;</span><span class="p">,</span>
+    <span class="n">api_module</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;webapp.api.main:app&quot;</span><span class="p">,</span>
+    <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_DOCKER_PORT</span><span class="p">,</span>
+    <span class="n">api_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;webapp/api&quot;</span><span class="p">,</span>
+    <span class="n">ui_dist_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;webapp/ui/dist&quot;</span><span class="p">,</span>
+    <span class="n">extra_run_lines</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render a Dockerfile for the canonical &quot;PyPI package + FastAPI + React&quot; pattern.</span>
+
+<span class="sd">    Assumes:</span>
+<span class="sd">    - Your Python package is on PyPI (with optional ``[extras]``).</span>
+<span class="sd">    - Your FastAPI app is in ``api_dir/`` (will be COPYed into the image).</span>
+<span class="sd">    - Your React UI is pre-built in ``ui_dist_dir/`` (will be COPYed in).</span>
+
+<span class="sd">    Why pre-build the UI locally instead of in the Dockerfile? Because</span>
+<span class="sd">    ``package-lock.json`` may have ``file:`` deps to a local monorepo that</span>
+<span class="sd">    doesn&#39;t exist on the build machine. Pre-building sidesteps the issue.</span>
+
+<span class="sd">    :param package: PyPI package name.</span>
+<span class="sd">    :param extras: Extras spec (without brackets), e.g. ``&quot;web&quot;`` →</span>
+<span class="sd">        ``package[web]``. Pass empty string to omit.</span>
+<span class="sd">    :param version_spec: PEP 440 version specifier, e.g. ``&quot;~=0.1.1&quot;``.</span>
+<span class="sd">        Empty string means &quot;latest&quot;.</span>
+<span class="sd">    :param python_version: Python base image tag (``&quot;3.12&quot;`` → ``python:3.12-slim``).</span>
+<span class="sd">    :param api_module: ``module.path:app_attr`` for uvicorn.</span>
+<span class="sd">    :param port: Port to expose (HF Spaces uses 7860 for Docker SDK).</span>
+<span class="sd">    :param api_dir: Local path of the FastAPI source, relative to the Space repo root.</span>
+<span class="sd">    :param ui_dist_dir: Local path of the pre-built React dist, relative to the Space repo root.</span>
+<span class="sd">    :param extra_run_lines: Additional ``RUN`` lines to insert (e.g., to</span>
+<span class="sd">        pre-cache datasets so cold start is sub-second).</span>
+<span class="sd">    :returns: The Dockerfile contents as a string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">extras_spec</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">extras</span><span class="si">}</span><span class="s2">]&quot;</span> <span class="k">if</span> <span class="n">extras</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">pip_target</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">package</span><span class="si">}{</span><span class="n">extras_spec</span><span class="si">}{</span><span class="n">version_spec</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">extras_block</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RUN </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">extra_run_lines</span><span class="p">)</span>
+    <span class="n">extras_block</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">extras_block</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">extras_block</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;FROM python:</span><span class="si">{</span><span class="n">python_version</span><span class="si">}</span><span class="s2">-slim</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;WORKDIR /app</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;# Install </span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2"> from PyPI.</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s1">&#39;RUN pip install --no-cache-dir &quot;</span><span class="si">{</span><span class="n">pip_target</span><span class="si">}</span><span class="s1">&quot;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;# FastAPI app source + prebuilt React UI.</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;COPY </span><span class="si">{</span><span class="n">api_dir</span><span class="si">}</span><span class="s2">/ /app/</span><span class="si">{</span><span class="n">api_dir</span><span class="si">}</span><span class="s2">/</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;COPY </span><span class="si">{</span><span class="n">ui_dist_dir</span><span class="si">}</span><span class="s2">/ /app/</span><span class="si">{</span><span class="n">ui_dist_dir</span><span class="si">}</span><span class="s2">/</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extras_block</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;EXPOSE </span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s1">&#39;CMD [&quot;uvicorn&quot;, &quot;</span><span class="si">{</span><span class="n">api_module</span><span class="si">}</span><span class="s1">&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&quot;]</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="render_space_readme">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.render_space_readme">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">render_space_readme</span><span class="p">(</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">color_from</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+    <span class="n">color_to</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span>
+    <span class="n">sdk</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;docker&quot;</span><span class="p">,</span>
+    <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_DOCKER_PORT</span><span class="p">,</span>
+    <span class="n">pinned</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">body</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render an HF Space README with the YAML frontmatter HF requires.</span>
+
+<span class="sd">    The frontmatter sets the Space&#39;s metadata (sdk, port, etc.) — required</span>
+<span class="sd">    even for Docker SDK Spaces. Body is appended after.</span>
+
+<span class="sd">    :param title: Display title for the Space.</span>
+<span class="sd">    :param color_from: Gradient start color (HF picks from a small palette).</span>
+<span class="sd">    :param color_to: Gradient end color.</span>
+<span class="sd">    :param sdk: ``&quot;docker&quot;``, ``&quot;gradio&quot;``, ``&quot;streamlit&quot;``, ``&quot;static&quot;``.</span>
+<span class="sd">    :param port: ``app_port`` (Docker SDK uses this; ignored otherwise).</span>
+<span class="sd">    :param pinned: Whether to pin to the user&#39;s HF profile.</span>
+<span class="sd">    :param body: Markdown content to append after the frontmatter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;---</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;title: </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;colorFrom: </span><span class="si">{</span><span class="n">color_from</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;colorTo: </span><span class="si">{</span><span class="n">color_to</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;sdk: </span><span class="si">{</span><span class="n">sdk</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;app_port: </span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;pinned: </span><span class="si">{</span><span class="s1">&#39;true&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">pinned</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;false&#39;</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;---</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">body</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Convenience: stage a webapp directory</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="stage_webapp">
+<a class="viewcode-back" href="../../module_docs/hfdol/deploy.html#hfdol.deploy.stage_webapp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">stage_webapp</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">staging_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+    <span class="n">api_src</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+    <span class="n">ui_dist_src</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+    <span class="n">api_dir_in_space</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;webapp/api&quot;</span><span class="p">,</span>
+    <span class="n">ui_dist_dir_in_space</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;webapp/ui/dist&quot;</span><span class="p">,</span>
+    <span class="n">dockerfile_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">readme_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">extra_files</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lay out the contents of a Space repo in a local staging directory.</span>
+
+<span class="sd">    Idempotent: re-running replaces the API and UI dirs but reuses what&#39;s</span>
+<span class="sd">    already there for things you didn&#39;t pass (e.g., an existing Dockerfile).</span>
+
+<span class="sd">    :param staging_dir: Where to assemble the Space contents.</span>
+<span class="sd">    :param api_src: Local source directory for the FastAPI app.</span>
+<span class="sd">    :param ui_dist_src: Local source directory for the pre-built React dist.</span>
+<span class="sd">    :param api_dir_in_space: Path inside the Space repo for the API.</span>
+<span class="sd">    :param ui_dist_dir_in_space: Path inside the Space repo for the UI dist.</span>
+<span class="sd">    :param dockerfile_text: Dockerfile contents (use :func:`render_pypi_webapp_dockerfile`).</span>
+<span class="sd">        If None, only writes one if the staging dir doesn&#39;t already have it.</span>
+<span class="sd">    :param readme_text: README contents (use :func:`render_space_readme`).</span>
+<span class="sd">        Same conditional behavior as ``dockerfile_text``.</span>
+<span class="sd">    :param extra_files: ``{relative_path: contents}`` extras (e.g., ``.gitignore``).</span>
+<span class="sd">    :returns: The staging directory path.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+
+    <span class="n">staging_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">staging_dir</span><span class="p">)</span>
+    <span class="n">api_src</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">api_src</span><span class="p">)</span>
+    <span class="n">ui_dist_src</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">ui_dist_src</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">api_src</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing API source: </span><span class="si">{</span><span class="n">api_src</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ui_dist_src</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing UI dist (build first): </span><span class="si">{</span><span class="n">ui_dist_src</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">staging_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">api_dst</span> <span class="o">=</span> <span class="n">staging_dir</span> <span class="o">/</span> <span class="n">api_dir_in_space</span>
+    <span class="k">if</span> <span class="n">api_dst</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">api_dst</span><span class="p">)</span>
+    <span class="n">api_dst</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">api_src</span><span class="p">,</span> <span class="n">api_dst</span><span class="p">)</span>
+
+    <span class="n">ui_dst</span> <span class="o">=</span> <span class="n">staging_dir</span> <span class="o">/</span> <span class="n">ui_dist_dir_in_space</span>
+    <span class="k">if</span> <span class="n">ui_dst</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">ui_dst</span><span class="p">)</span>
+    <span class="n">ui_dst</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">ui_dist_src</span><span class="p">,</span> <span class="n">ui_dst</span><span class="p">)</span>
+
+    <span class="n">dockerfile</span> <span class="o">=</span> <span class="n">staging_dir</span> <span class="o">/</span> <span class="s2">&quot;Dockerfile&quot;</span>
+    <span class="k">if</span> <span class="n">dockerfile_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dockerfile</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">dockerfile_text</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">dockerfile</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;No Dockerfile in </span><span class="si">{</span><span class="n">staging_dir</span><span class="si">}</span><span class="s2"> and none provided. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Pass dockerfile_text=render_pypi_webapp_dockerfile(...).&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">readme</span> <span class="o">=</span> <span class="n">staging_dir</span> <span class="o">/</span> <span class="s2">&quot;README.md&quot;</span>
+    <span class="k">if</span> <span class="n">readme_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">readme</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">readme_text</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">readme</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;No README.md in </span><span class="si">{</span><span class="n">staging_dir</span><span class="si">}</span><span class="s2"> and none provided. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Pass readme_text=render_space_readme(...).&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">extra_files</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">relpath</span><span class="p">,</span> <span class="n">contents</span> <span class="ow">in</span> <span class="n">extra_files</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">staging_dir</span> <span class="o">/</span> <span class="n">relpath</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">contents</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">staging_dir</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

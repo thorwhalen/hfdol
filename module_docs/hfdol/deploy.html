@@ -1,0 +1,384 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hfdol.deploy &mdash; hfdol 0.1.15 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=e2f3408e"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="hfdol.tests" href="tests.html" />
+    <link rel="prev" title="hfdol.base" href="base.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            hfdol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../hfdol.html">hfdol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">hfdol.base</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">hfdol.deploy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.BuildResult"><code class="docutils literal notranslate"><span class="pre">BuildResult</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.create_or_update_space"><code class="docutils literal notranslate"><span class="pre">create_or_update_space()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.deploy_webapp"><code class="docutils literal notranslate"><span class="pre">deploy_webapp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.ensure_write_token"><code class="docutils literal notranslate"><span class="pre">ensure_write_token()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.factory_reboot"><code class="docutils literal notranslate"><span class="pre">factory_reboot()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.render_pypi_webapp_dockerfile"><code class="docutils literal notranslate"><span class="pre">render_pypi_webapp_dockerfile()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.render_space_readme"><code class="docutils literal notranslate"><span class="pre">render_space_readme()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.stage_webapp"><code class="docutils literal notranslate"><span class="pre">stage_webapp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.upload_app_dir"><code class="docutils literal notranslate"><span class="pre">upload_app_dir()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfdol.deploy.wait_for_build"><code class="docutils literal notranslate"><span class="pre">wait_for_build()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tests.html">hfdol.tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_base.html">hfdol.tests.test_base</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">hfdol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">hfdol.deploy</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/hfdol/deploy.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-hfdol.deploy">
+<span id="hfdol-deploy"></span><h1>hfdol.deploy<a class="headerlink" href="#module-hfdol.deploy" title="Link to this heading"></a></h1>
+<p>Deploy webapps to HuggingFace Spaces.</p>
+<p>This module wraps <cite>huggingface_hub</cite> with opinionated, idempotent helpers for
+publishing a Python package’s webapp to a Docker-SDK Space. The primary entry
+point is <a class="reference internal" href="#hfdol.deploy.deploy_webapp" title="hfdol.deploy.deploy_webapp"><code class="xref py py-func docutils literal notranslate"><span class="pre">deploy_webapp()</span></code></a>, which composes the smaller helpers into a
+full create-or-update + restart cycle.</p>
+<p>Functions are designed to be composable: each does one thing, fails loudly,
+and prints what it’s about to do. The module assumes you already have a
+package on PyPI (or a Dockerfile that knows how to install it).</p>
+<p>Quick reference:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">hfdol.deploy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deploy_webapp</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deploy_webapp</span><span class="p">(</span>                          
+<span class="gp">... </span>    <span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;thorwhalen/typola&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">source_dir</span><span class="o">=</span><span class="s2">&quot;/path/to/staging&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For ad-hoc operations:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">hfdol.deploy</span><span class="w"> </span><span class="kn">import</span> <span class="n">factory_reboot</span><span class="p">,</span> <span class="n">wait_for_build</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">factory_reboot</span><span class="p">(</span><span class="s2">&quot;thorwhalen/typola&quot;</span><span class="p">)</span>     
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wait_for_build</span><span class="p">(</span><span class="s2">&quot;thorwhalen/typola&quot;</span><span class="p">)</span>     
+</pre></div>
+</div>
+<p>Token resolution: Operations need a write-scoped HF token. By default,
+<a class="reference internal" href="#hfdol.deploy.ensure_write_token" title="hfdol.deploy.ensure_write_token"><code class="xref py py-func docutils literal notranslate"><span class="pre">ensure_write_token()</span></code></a> reads <code class="docutils literal notranslate"><span class="pre">HF_WRITE_TOKEN</span></code> from the environment, then
+falls back to sourcing <code class="docutils literal notranslate"><span class="pre">~/.keys</span></code> (a shell file that exports it). If you keep
+your write token elsewhere, pass <code class="docutils literal notranslate"><span class="pre">token=...</span></code> to any function explicitly.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfdol.deploy.BuildResult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">BuildResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">final_stage:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_seconds:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timed_out:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stages_seen:</span> <span class="pre">list[str]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/deploy.html#BuildResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.BuildResult" title="Link to this definition"></a></dt>
+<dd><p>Outcome of waiting for a Space build.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.deploy.create_or_update_space">
+<span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">create_or_update_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'docker'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exist_ok</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfdol/deploy.html#create_or_update_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.create_or_update_space" title="Link to this definition"></a></dt>
+<dd><p>Create an HF Space if it doesn’t exist; otherwise return its info.</p>
+<p>Idempotent. Safe to call before every deploy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_id</strong> – <code class="docutils literal notranslate"><span class="pre">owner/space-name</span></code>.</p></li>
+<li><p><strong>sdk</strong> – Space SDK — <code class="docutils literal notranslate"><span class="pre">docker</span></code> (recommended for custom apps),
+<code class="docutils literal notranslate"><span class="pre">gradio</span></code>, <code class="docutils literal notranslate"><span class="pre">streamlit</span></code>, <code class="docutils literal notranslate"><span class="pre">static</span></code>.</p></li>
+<li><p><strong>private</strong> – If True, create as private (only matters on first creation).</p></li>
+<li><p><strong>token</strong> – Write token; defaults to <a class="reference internal" href="#hfdol.deploy.ensure_write_token" title="hfdol.deploy.ensure_write_token"><code class="xref py py-func docutils literal notranslate"><span class="pre">ensure_write_token()</span></code></a>.</p></li>
+<li><p><strong>exist_ok</strong> – If True (default), an already-existing repo is fine.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">SpaceInfo</span></code> for the (now-existing) Space.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.deploy.deploy_webapp">
+<span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">deploy_webapp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'docker'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Deploy</span> <span class="pre">webapp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_patterns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('node_modules/**',</span> <span class="pre">'__pycache__/**',</span> <span class="pre">'*.pyc',</span> <span class="pre">'.DS_Store',</span> <span class="pre">'.git/**')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_patterns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rebuild</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">900</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#hfdol.deploy.BuildResult" title="hfdol.deploy.BuildResult"><span class="pre">BuildResult</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/hfdol/deploy.html#deploy_webapp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.deploy_webapp" title="Link to this definition"></a></dt>
+<dd><p>End-to-end: create-if-missing → upload → factory reboot → wait for build.</p>
+<p>The most common deploy entry point. <code class="docutils literal notranslate"><span class="pre">source_dir</span></code> should contain
+everything that goes on the Space repo: <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code>, <code class="docutils literal notranslate"><span class="pre">README.md</span></code>
+(with HF YAML frontmatter), and your app source (e.g., <code class="docutils literal notranslate"><span class="pre">webapp/api/</span></code>,
+<code class="docutils literal notranslate"><span class="pre">webapp/ui/dist/</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_id</strong> – <code class="docutils literal notranslate"><span class="pre">owner/space-name</span></code>.</p></li>
+<li><p><strong>source_dir</strong> – Local staging directory.</p></li>
+<li><p><strong>sdk</strong> – Space SDK (only matters on first creation).</p></li>
+<li><p><strong>private</strong> – Create as private (only matters on first creation).</p></li>
+<li><p><strong>token</strong> – Write token; defaults to <a class="reference internal" href="#hfdol.deploy.ensure_write_token" title="hfdol.deploy.ensure_write_token"><code class="xref py py-func docutils literal notranslate"><span class="pre">ensure_write_token()</span></code></a>.</p></li>
+<li><p><strong>message</strong> – Commit message.</p></li>
+<li><p><strong>ignore_patterns</strong> – Glob patterns to skip during upload.</p></li>
+<li><p><strong>delete_patterns</strong> – Glob patterns to delete from the Space before
+uploading (e.g., to clear stale build artifacts).</p></li>
+<li><p><strong>rebuild</strong> – If True (default), trigger a factory reboot after upload.
+Set False to skip — useful when only README/metadata changed.</p></li>
+<li><p><strong>wait</strong> – If True (default), poll until the build settles.</p></li>
+<li><p><strong>timeout</strong> – Max seconds to wait for the build.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#hfdol.deploy.BuildResult" title="hfdol.deploy.BuildResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">BuildResult</span></code></a> if <code class="docutils literal notranslate"><span class="pre">wait=True</span></code>, else <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.deploy.ensure_write_token">
+<span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">ensure_write_token</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_var</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'HF_WRITE_TOKEN'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.keys')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/hfdol/deploy.html#ensure_write_token"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.ensure_write_token" title="Link to this definition"></a></dt>
+<dd><p>Return a write-scoped HF token; source <code class="docutils literal notranslate"><span class="pre">~/.keys</span></code> if needed.</p>
+<p>HF Spaces operations (create, upload, restart) need a write token. The
+default <code class="docutils literal notranslate"><span class="pre">HF_TOKEN</span></code> is often read-only. Convention: keep the write token
+in <code class="docutils literal notranslate"><span class="pre">~/.keys</span></code> as <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">HF_WRITE_TOKEN=hf_...</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_var</strong> – Environment variable name to read first.</p></li>
+<li><p><strong>keys_file</strong> – Shell file to source as fallback (must export <code class="docutils literal notranslate"><span class="pre">env_var</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The token string.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>SystemExit</strong> – If no token can be resolved.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.deploy.factory_reboot">
+<span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">factory_reboot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/hfdol/deploy.html#factory_reboot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.factory_reboot" title="Link to this definition"></a></dt>
+<dd><p>Trigger a from-scratch rebuild of the Space (busts Docker layer cache).</p>
+<p>A normal restart reuses cached Docker layers. A factory reboot blows the
+cache away — required when <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> should re-fetch a new package
+version, or when system deps in the Dockerfile changed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_id</strong> – <code class="docutils literal notranslate"><span class="pre">owner/space-name</span></code>.</p></li>
+<li><p><strong>token</strong> – Write token; defaults to <a class="reference internal" href="#hfdol.deploy.ensure_write_token" title="hfdol.deploy.ensure_write_token"><code class="xref py py-func docutils literal notranslate"><span class="pre">ensure_write_token()</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.deploy.render_pypi_webapp_dockerfile">
+<span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">render_pypi_webapp_dockerfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extras</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'web'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'3.12'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'webapp.api.main:app'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7860</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'webapp/api'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_dist_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'webapp/ui/dist'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_run_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/hfdol/deploy.html#render_pypi_webapp_dockerfile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.render_pypi_webapp_dockerfile" title="Link to this definition"></a></dt>
+<dd><p>Render a Dockerfile for the canonical “PyPI package + FastAPI + React” pattern.</p>
+<p>Assumes:
+- Your Python package is on PyPI (with optional <code class="docutils literal notranslate"><span class="pre">[extras]</span></code>).
+- Your FastAPI app is in <code class="docutils literal notranslate"><span class="pre">api_dir/</span></code> (will be COPYed into the image).
+- Your React UI is pre-built in <code class="docutils literal notranslate"><span class="pre">ui_dist_dir/</span></code> (will be COPYed in).</p>
+<p>Why pre-build the UI locally instead of in the Dockerfile? Because
+<code class="docutils literal notranslate"><span class="pre">package-lock.json</span></code> may have <code class="docutils literal notranslate"><span class="pre">file:</span></code> deps to a local monorepo that
+doesn’t exist on the build machine. Pre-building sidesteps the issue.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>package</strong> – PyPI package name.</p></li>
+<li><p><strong>extras</strong> – Extras spec (without brackets), e.g. <code class="docutils literal notranslate"><span class="pre">&quot;web&quot;</span></code> →
+<code class="docutils literal notranslate"><span class="pre">package[web]</span></code>. Pass empty string to omit.</p></li>
+<li><p><strong>version_spec</strong> – PEP 440 version specifier, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;~=0.1.1&quot;</span></code>.
+Empty string means “latest”.</p></li>
+<li><p><strong>python_version</strong> – Python base image tag (<code class="docutils literal notranslate"><span class="pre">&quot;3.12&quot;</span></code> → <code class="docutils literal notranslate"><span class="pre">python:3.12-slim</span></code>).</p></li>
+<li><p><strong>api_module</strong> – <code class="docutils literal notranslate"><span class="pre">module.path:app_attr</span></code> for uvicorn.</p></li>
+<li><p><strong>port</strong> – Port to expose (HF Spaces uses 7860 for Docker SDK).</p></li>
+<li><p><strong>api_dir</strong> – Local path of the FastAPI source, relative to the Space repo root.</p></li>
+<li><p><strong>ui_dist_dir</strong> – Local path of the pre-built React dist, relative to the Space repo root.</p></li>
+<li><p><strong>extra_run_lines</strong> – Additional <code class="docutils literal notranslate"><span class="pre">RUN</span></code> lines to insert (e.g., to
+pre-cache datasets so cold start is sub-second).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Dockerfile contents as a string.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.deploy.render_space_readme">
+<span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">render_space_readme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'blue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'green'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'docker'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7860</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pinned</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/hfdol/deploy.html#render_space_readme"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.render_space_readme" title="Link to this definition"></a></dt>
+<dd><p>Render an HF Space README with the YAML frontmatter HF requires.</p>
+<p>The frontmatter sets the Space’s metadata (sdk, port, etc.) — required
+even for Docker SDK Spaces. Body is appended after.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> – Display title for the Space.</p></li>
+<li><p><strong>color_from</strong> – Gradient start color (HF picks from a small palette).</p></li>
+<li><p><strong>color_to</strong> – Gradient end color.</p></li>
+<li><p><strong>sdk</strong> – <code class="docutils literal notranslate"><span class="pre">&quot;docker&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;gradio&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;streamlit&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;static&quot;</span></code>.</p></li>
+<li><p><strong>port</strong> – <code class="docutils literal notranslate"><span class="pre">app_port</span></code> (Docker SDK uses this; ignored otherwise).</p></li>
+<li><p><strong>pinned</strong> – Whether to pin to the user’s HF profile.</p></li>
+<li><p><strong>body</strong> – Markdown content to append after the frontmatter.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.deploy.stage_webapp">
+<span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">stage_webapp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">staging_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_src</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_dist_src</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_dir_in_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'webapp/api'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_dist_dir_in_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'webapp/ui/dist'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dockerfile_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">readme_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../../_modules/hfdol/deploy.html#stage_webapp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.stage_webapp" title="Link to this definition"></a></dt>
+<dd><p>Lay out the contents of a Space repo in a local staging directory.</p>
+<p>Idempotent: re-running replaces the API and UI dirs but reuses what’s
+already there for things you didn’t pass (e.g., an existing Dockerfile).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>staging_dir</strong> – Where to assemble the Space contents.</p></li>
+<li><p><strong>api_src</strong> – Local source directory for the FastAPI app.</p></li>
+<li><p><strong>ui_dist_src</strong> – Local source directory for the pre-built React dist.</p></li>
+<li><p><strong>api_dir_in_space</strong> – Path inside the Space repo for the API.</p></li>
+<li><p><strong>ui_dist_dir_in_space</strong> – Path inside the Space repo for the UI dist.</p></li>
+<li><p><strong>dockerfile_text</strong> – Dockerfile contents (use <a class="reference internal" href="#hfdol.deploy.render_pypi_webapp_dockerfile" title="hfdol.deploy.render_pypi_webapp_dockerfile"><code class="xref py py-func docutils literal notranslate"><span class="pre">render_pypi_webapp_dockerfile()</span></code></a>).
+If None, only writes one if the staging dir doesn’t already have it.</p></li>
+<li><p><strong>readme_text</strong> – README contents (use <a class="reference internal" href="#hfdol.deploy.render_space_readme" title="hfdol.deploy.render_space_readme"><code class="xref py py-func docutils literal notranslate"><span class="pre">render_space_readme()</span></code></a>).
+Same conditional behavior as <code class="docutils literal notranslate"><span class="pre">dockerfile_text</span></code>.</p></li>
+<li><p><strong>extra_files</strong> – <code class="docutils literal notranslate"><span class="pre">{relative_path:</span> <span class="pre">contents}</span></code> extras (e.g., <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The staging directory path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.deploy.upload_app_dir">
+<span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">upload_app_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Update</span> <span class="pre">app</span> <span class="pre">contents'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_patterns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('node_modules/**',</span> <span class="pre">'__pycache__/**',</span> <span class="pre">'*.pyc',</span> <span class="pre">'.DS_Store',</span> <span class="pre">'.git/**')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_patterns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/hfdol/deploy.html#upload_app_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.upload_app_dir" title="Link to this definition"></a></dt>
+<dd><p>Upload a local folder to an HF Space, replacing the live files.</p>
+<p>Wraps <code class="xref py py-func docutils literal notranslate"><span class="pre">huggingface_hub.HfApi.upload_folder()</span></code> with sensible ignore
+patterns and a printed plan. Existing files on the Space that are not in
+the local folder are NOT deleted unless you pass <code class="docutils literal notranslate"><span class="pre">delete_patterns</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_id</strong> – <code class="docutils literal notranslate"><span class="pre">owner/space-name</span></code>.</p></li>
+<li><p><strong>folder_path</strong> – Local directory to upload.</p></li>
+<li><p><strong>message</strong> – Commit message on the Space repo.</p></li>
+<li><p><strong>token</strong> – Write token; defaults to <a class="reference internal" href="#hfdol.deploy.ensure_write_token" title="hfdol.deploy.ensure_write_token"><code class="xref py py-func docutils literal notranslate"><span class="pre">ensure_write_token()</span></code></a>.</p></li>
+<li><p><strong>ignore_patterns</strong> – Glob patterns to skip.</p></li>
+<li><p><strong>delete_patterns</strong> – Optional glob patterns of remote files to delete
+before upload (e.g., <code class="docutils literal notranslate"><span class="pre">[&quot;webapp/ui/dist/**&quot;]</span></code> to ensure stale build
+artifacts are removed).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfdol.deploy.wait_for_build">
+<span class="sig-prename descclassname"><span class="pre">hfdol.deploy.</span></span><span class="sig-name descname"><span class="pre">wait_for_build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">900</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_stage_change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#hfdol.deploy.BuildResult" title="hfdol.deploy.BuildResult"><span class="pre">BuildResult</span></a></span></span><a class="reference internal" href="../../_modules/hfdol/deploy.html#wait_for_build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfdol.deploy.wait_for_build" title="Link to this definition"></a></dt>
+<dd><p>Poll Space status until it lands in a terminal state or times out.</p>
+<p>Terminal states: <code class="docutils literal notranslate"><span class="pre">RUNNING</span></code>, <code class="docutils literal notranslate"><span class="pre">RUNNING_BUILDING</span></code> (success); <code class="docutils literal notranslate"><span class="pre">BUILD_ERROR</span></code>,
+<code class="docutils literal notranslate"><span class="pre">RUNTIME_ERROR</span></code> (failure). Times out after <code class="docutils literal notranslate"><span class="pre">timeout</span></code> seconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_id</strong> – <code class="docutils literal notranslate"><span class="pre">owner/space-name</span></code>.</p></li>
+<li><p><strong>token</strong> – Write token (read access also fine); defaults to env.</p></li>
+<li><p><strong>timeout</strong> – Max seconds to wait.</p></li>
+<li><p><strong>poll_interval</strong> – Seconds between polls.</p></li>
+<li><p><strong>on_stage_change</strong> – Callback <code class="docutils literal notranslate"><span class="pre">(stage,</span> <span class="pre">elapsed_seconds)</span> <span class="pre">-&gt;</span> <span class="pre">None</span></code>
+invoked each time the stage transitions. Default prints to stdout.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#hfdol.deploy.BuildResult" title="hfdol.deploy.BuildResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">BuildResult</span></code></a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="base.html" class="btn btn-neutral float-left" title="hfdol.base" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tests.html" class="btn btn-neutral float-right" title="hfdol.tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

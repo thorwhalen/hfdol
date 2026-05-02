@@ -4,5 +4,6 @@
 
    module_docs/hfdol
    module_docs/hfdol/base
+   module_docs/hfdol/deploy
    module_docs/hfdol/tests
    module_docs/hfdol/tests/test_base
