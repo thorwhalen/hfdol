@@ -42,18 +42,40 @@ def build_ui(repo_dir: pathlib.Path) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--space", required=True, help='HF Space repo, e.g. "thorwhalen/typola".')
+    ap.add_argument(
+        "--space", required=True, help='HF Space repo, e.g. "thorwhalen/typola".'
+    )
     ap.add_argument("--repo", required=True, help="Local source repo directory.")
-    ap.add_argument("--package", required=True, help="PyPI package name to install in the Dockerfile.")
+    ap.add_argument(
+        "--package",
+        required=True,
+        help="PyPI package name to install in the Dockerfile.",
+    )
     ap.add_argument("--extras", default="web", help='PyPI extras (default: "web").')
-    ap.add_argument("--pin", default="~=0.1.0", help='PyPI version spec (default: "~=0.1.0").')
-    ap.add_argument("--title", default=None, help="Space display title (defaults to package name capitalised).")
-    ap.add_argument("--staging", default=None, help="Staging dir (default: /tmp/{package}-space).")
+    ap.add_argument(
+        "--pin", default="~=0.1.0", help='PyPI version spec (default: "~=0.1.0").'
+    )
+    ap.add_argument(
+        "--title",
+        default=None,
+        help="Space display title (defaults to package name capitalised).",
+    )
+    ap.add_argument(
+        "--staging", default=None, help="Staging dir (default: /tmp/{package}-space)."
+    )
     ap.add_argument("--message", default="Update webapp source", help="Commit message.")
-    ap.add_argument("--skip-build", action="store_true", help="Don't run npm; reuse existing dist/.")
-    ap.add_argument("--no-restart", action="store_true", help="Upload only; don't factory reboot.")
-    ap.add_argument("--no-wait", action="store_true", help="Don't wait for the build to settle.")
-    ap.add_argument("--timeout", type=int, default=900, help="Seconds to wait for build.")
+    ap.add_argument(
+        "--skip-build", action="store_true", help="Don't run npm; reuse existing dist/."
+    )
+    ap.add_argument(
+        "--no-restart", action="store_true", help="Upload only; don't factory reboot."
+    )
+    ap.add_argument(
+        "--no-wait", action="store_true", help="Don't wait for the build to settle."
+    )
+    ap.add_argument(
+        "--timeout", type=int, default=900, help="Seconds to wait for build."
+    )
     ap.add_argument(
         "--cache",
         action="append",
@@ -63,7 +85,9 @@ def main() -> None:
     args = ap.parse_args()
 
     repo_dir = pathlib.Path(args.repo).expanduser().resolve()
-    staging_dir = pathlib.Path(args.staging or f"/tmp/{args.package}-space").expanduser()
+    staging_dir = pathlib.Path(
+        args.staging or f"/tmp/{args.package}-space"
+    ).expanduser()
     title = args.title or args.package.capitalize()
 
     if not args.skip_build:

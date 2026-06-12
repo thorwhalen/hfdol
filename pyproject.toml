@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hfdol"
-version = "0.1.15"
+version = "0.1.19"
 description = "Simple Mapping interface to HuggingFace"
 readme = "README.md"
 requires-python = ">=3.10"

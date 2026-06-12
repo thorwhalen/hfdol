@@ -38,10 +38,10 @@ from huggingface_hub.hf_api import DatasetInfo, ModelInfo, SpaceInfo, PaperInfo
 class RepoType(str, Enum):
     """Valid HuggingFace repository types."""
 
-    DATASET = 'dataset'
-    MODEL = 'model'
-    SPACE = 'space'
-    PAPER = 'paper'
+    DATASET = "dataset"
+    MODEL = "model"
+    SPACE = "space"
+    PAPER = "paper"
 
 
 DFLT_SIZE_UNIT_BYTES: int = 1024**3  # GiB
@@ -165,7 +165,7 @@ def get_size(
         ValueError: If repo_type is "paper" (papers don't have file sizes) or if repo_type is invalid.
     """
     # Convert enum to string if needed
-    repo_type_str = repo_type.value if hasattr(repo_type, 'value') else str(repo_type)
+    repo_type_str = repo_type.value if hasattr(repo_type, "value") else str(repo_type)
 
     if repo_type_str == "paper":
         raise ValueError("Papers don't have file sizes - they are metadata objects")
@@ -258,7 +258,7 @@ class HfMapping(Mapping):
         if repo_type is not None:
             # Convert enum to string value or use string directly
             self.repo_type = (
-                repo_type.value if hasattr(repo_type, 'value') else str(repo_type)
+                repo_type.value if hasattr(repo_type, "value") else str(repo_type)
             )
         elif self.repo_type is None:
             raise NotImplementedError(
@@ -268,7 +268,7 @@ class HfMapping(Mapping):
             # Convert class attribute enum to string if needed
             self.repo_type = (
                 self.repo_type.value
-                if hasattr(self.repo_type, 'value')
+                if hasattr(self.repo_type, "value")
                 else str(self.repo_type)
             )
 

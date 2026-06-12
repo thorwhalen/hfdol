@@ -332,7 +332,9 @@ def deploy_webapp(
         space_url = f"https://{repo_id.replace('/', '-')}.hf.space/"
         print(f"\nSpace is live: {space_url}")
     elif result.timed_out:
-        print(f"\nTimeout after {result.elapsed_seconds}s (still {result.final_stage}).")
+        print(
+            f"\nTimeout after {result.elapsed_seconds}s (still {result.final_stage})."
+        )
     else:
         print(f"\nBuild failed: stage={result.final_stage}")
         print(f"Logs: https://huggingface.co/spaces/{repo_id}/logs")
@@ -436,7 +438,8 @@ def render_space_readme(
         f"pinned: {'true' if pinned else 'false'}\n"
         f"---\n"
         f"\n"
-        f"{body}".rstrip() + "\n"
+        f"{body}".rstrip()
+        + "\n"
     )
 
 
