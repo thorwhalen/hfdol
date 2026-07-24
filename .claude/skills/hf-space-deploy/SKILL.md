@@ -13,15 +13,15 @@ This skill is a thin wrapper. The actual work happens in `hfdol.deploy` — comp
 
 ```python
 from hfdol.deploy import (
-    deploy_webapp,           # full workflow: create → upload → reboot → wait
+    deploy_webapp,  # full workflow: create → upload → reboot → wait
     create_or_update_space,  # idempotent space creation
-    upload_app_dir,          # upload a folder, replacing live files
-    factory_reboot,          # bust the Docker layer cache
-    wait_for_build,          # poll until RUNNING / failure
-    ensure_write_token,      # resolve HF_WRITE_TOKEN from env or ~/.keys
+    upload_app_dir,  # upload a folder, replacing live files
+    factory_reboot,  # bust the Docker layer cache
+    wait_for_build,  # poll until RUNNING / failure
+    ensure_write_token,  # resolve HF_WRITE_TOKEN from env or ~/.keys
     render_pypi_webapp_dockerfile,  # generate a Dockerfile
-    render_space_readme,     # generate the YAML-frontmatter README
-    stage_webapp,            # lay out a staging dir for upload
+    render_space_readme,  # generate the YAML-frontmatter README
+    stage_webapp,  # lay out a staging dir for upload
 )
 ```
 
@@ -51,7 +51,11 @@ The standard "package is on PyPI, has a webapp" recipe. Five steps:
 
 3. **Stage the Space contents** in a working directory:
    ```python
-   from hfdol.deploy import stage_webapp, render_pypi_webapp_dockerfile, render_space_readme
+   from hfdol.deploy import (
+       stage_webapp,
+       render_pypi_webapp_dockerfile,
+       render_space_readme,
+   )
 
    stage_webapp(
        staging_dir="/tmp/PKG-space",
@@ -59,8 +63,8 @@ The standard "package is on PyPI, has a webapp" recipe. Five steps:
        ui_dist_src="/path/to/repo/webapp/ui/dist",
        dockerfile_text=render_pypi_webapp_dockerfile(
            package="PKG",
-           extras="web",          # → PKG[web]
-           version_spec="~=0.1.1", # compatible-release
+           extras="web",  # → PKG[web]
+           version_spec="~=0.1.1",  # compatible-release
            extra_run_lines=[
                # Pre-cache datasets so cold start is sub-second.
                "python -c \"from PKG import load; load('something')\"",
@@ -76,6 +80,7 @@ The standard "package is on PyPI, has a webapp" recipe. Five steps:
 4. **Deploy** (creates if missing, uploads, reboots, waits):
    ```python
    from hfdol.deploy import deploy_webapp
+
    result = deploy_webapp(
        repo_id="OWNER/PKG",
        source_dir="/tmp/PKG-space",

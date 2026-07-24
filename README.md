@@ -51,7 +51,7 @@ if not it will download it, then give it to you (and it will be cached locally
 for the next time you access it). 
 
 ```python
-data = hfdol.datasets['stingning/ultrachat']  # Loads the dataset
+data = hfdol.datasets["stingning/ultrachat"]  # Loads the dataset
 print(data)  # Shows dataset information and structure
 ```
 
@@ -62,7 +62,7 @@ repositories:
 
 ```python
 # Search for music-related datasets
-search_results = hfdol.datasets.search('music', gated=False)
+search_results = hfdol.datasets.search("music", gated=False)
 print(f"search_results is a {type(search_results).__name__}")  # It's a generator
 
 # Get the first result (it will be a `DatasetInfo` instance contain information on the dataset)
@@ -87,7 +87,7 @@ def table_of_results(results, n=10):
 
     results_table = pd.DataFrame(  # make a table with
         map(
-            operator.attrgetter('__dict__'),  # the attributes dicts
+            operator.attrgetter("__dict__"),  # the attributes dicts
             itertools.islice(results, n),  # ... of the first 10 search results
         )
     )
@@ -118,7 +118,7 @@ The `hfdol.models` singleton provides the same dictionary-like interface for mod
 Find models by keywords:
 
 ```python
-model_search_results = hfdol.models.search('embeddings', gated=False)
+model_search_results = hfdol.models.search("embeddings", gated=False)
 model_result = next(model_search_results)
 print(f"Model: {model_result.id}")
 ```
@@ -149,7 +149,7 @@ The `hfdol.spaces` singleton provides access to HuggingFace Spaces (interactive 
 Find interesting Spaces by keywords:
 
 ```python
-space_search_results = hfdol.spaces.search('gradio', limit=5)
+space_search_results = hfdol.spaces.search("gradio", limit=5)
 space_result = next(space_search_results)
 print(f"Space: {space_result.id}")
 ```
@@ -180,7 +180,7 @@ The `hfdol.papers` singleton provides access to research papers hosted on Huggin
 Find research papers by topic:
 
 ```python
-paper_search_results = hfdol.papers.search('transformer', limit=5)
+paper_search_results = hfdol.papers.search("transformer", limit=5)
 paper_result = next(paper_search_results)
 print(f"Paper: {paper_result.id}")
 ```
@@ -205,26 +205,27 @@ You can check the size of any repository before downloading using the `get_size`
 from hfdol import get_size
 
 # Get size of a dataset (specify repo_type explicitly)
-dataset_size = get_size('ccmusic-database/music_genre', repo_type='dataset')
+dataset_size = get_size("ccmusic-database/music_genre", repo_type="dataset")
 print(f"Dataset size: {dataset_size:.2f} GiB")
 
-# Get size of a model 
-model_size = get_size('ccmusic-database/music_genre', repo_type='model')
+# Get size of a model
+model_size = get_size("ccmusic-database/music_genre", repo_type="model")
 print(f"Model size: {model_size:.2f} GiB")
 
 # Using RepoType enum for type safety
 from hfdol.base import RepoType
-size_with_enum = get_size('some-repo', repo_type=RepoType.DATASET)
+
+size_with_enum = get_size("some-repo", repo_type=RepoType.DATASET)
 
 # Get size in different units (e.g., bytes)
-size_in_bytes = get_size('some-repo', repo_type='dataset', unit_bytes=1)
+size_in_bytes = get_size("some-repo", repo_type="dataset", unit_bytes=1)
 ```
 
 **Pro tip**: Use the singleton instances for automatic repo_type handling:
 ```python
 # These automatically know their repo_type
-dataset_size = hfdol.datasets.get_size('ccmusic-database/music_genre')
-model_size = hfdol.models.get_size('ccmusic-database/music_genre')
+dataset_size = hfdol.datasets.get_size("ccmusic-database/music_genre")
+model_size = hfdol.models.get_size("ccmusic-database/music_genre")
 ```
 
 ### Unified Interface
@@ -327,7 +328,7 @@ The API supports multiple levels of sophistication:
 
 ```python
 # Simplest: Use pre-configured singletons
-data = hfdol.datasets['some/dataset']
+data = hfdol.datasets["some/dataset"]
 
 # Advanced: Create custom instances with configuration
 my_datasets = HfDatasets()
