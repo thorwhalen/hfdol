@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>hfdol.base &mdash; hfdol 0.1.15 documentation</title>
+  <title>hfdol.base &mdash; hfdol 0.1.19 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e2f3408e"></script>
+      <script src="../../_static/documentation_options.js?v=3d116926"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -120,10 +120,10 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">RepoType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Valid HuggingFace repository types.&quot;&quot;&quot;</span>
 
-    <span class="n">DATASET</span> <span class="o">=</span> <span class="s1">&#39;dataset&#39;</span>
-    <span class="n">MODEL</span> <span class="o">=</span> <span class="s1">&#39;model&#39;</span>
-    <span class="n">SPACE</span> <span class="o">=</span> <span class="s1">&#39;space&#39;</span>
-    <span class="n">PAPER</span> <span class="o">=</span> <span class="s1">&#39;paper&#39;</span></div>
+    <span class="n">DATASET</span> <span class="o">=</span> <span class="s2">&quot;dataset&quot;</span>
+    <span class="n">MODEL</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span>
+    <span class="n">SPACE</span> <span class="o">=</span> <span class="s2">&quot;space&quot;</span>
+    <span class="n">PAPER</span> <span class="o">=</span> <span class="s2">&quot;paper&quot;</span></div>
 
 
 
@@ -253,7 +253,7 @@
 <span class="sd">        ValueError: If repo_type is &quot;paper&quot; (papers don&#39;t have file sizes) or if repo_type is invalid.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Convert enum to string if needed</span>
-    <span class="n">repo_type_str</span> <span class="o">=</span> <span class="n">repo_type</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">repo_type</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo_type</span><span class="p">)</span>
+    <span class="n">repo_type_str</span> <span class="o">=</span> <span class="n">repo_type</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">repo_type</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo_type</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">repo_type_str</span> <span class="o">==</span> <span class="s2">&quot;paper&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Papers don&#39;t have file sizes - they are metadata objects&quot;</span><span class="p">)</span>
@@ -352,7 +352,7 @@
         <span class="k">if</span> <span class="n">repo_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Convert enum to string value or use string directly</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">repo_type</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">repo_type</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo_type</span><span class="p">)</span>
+                <span class="n">repo_type</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">repo_type</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo_type</span><span class="p">)</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
@@ -362,7 +362,7 @@
             <span class="c1"># Convert class attribute enum to string if needed</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="o">.</span><span class="n">value</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">)</span>
                 <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_type</span><span class="p">)</span>
             <span class="p">)</span>
 
@@ -545,7 +545,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
