@@ -146,6 +146,32 @@ def ensure_id(obj):
         raise ValueError(f"Cannot ensure ID from object of type {type(obj)}")
 
 
+def _leaf_key(self, key):
+    """The key as the innermost (leaf) store sees it, whatever wraps this instance.
+
+    ``HfMapping`` has no key transform of its own, so this is a no-op unless the
+    instance is wrapped with a ``dol`` key codec (``wrap_kvs``, ``KeyCodecs.prefixed``,
+    ...) -- in which case ``__getitem__`` already resolves keys correctly (dunders are
+    delegated by construction), but a non-dunder method like ``get_size`` would
+    otherwise receive the outer, unmapped key. See thorwhalen/hfdol#2.
+
+    ``dol`` is deliberately not a hard dependency of this package (nothing else here
+    needs it): the import is lazy and any failure -- missing package, or an
+    unrelated-enough ``dol`` version -- falls back to returning ``key`` unchanged,
+    which is exactly the correct behavior for the unwrapped case.
+    """
+    key = ensure_id(key)
+    try:
+        from dol import wrapped_self, inner_most_key
+
+        resolved = inner_most_key(wrapped_self(self), key, default=None)
+    except Exception:
+        return key
+    # `resolved` is None both when nothing wraps `self` and when a layer's
+    # `_id_of_key` legitimately returns None -- neither should override `key`.
+    return resolved if isinstance(resolved, str) else key
+
+
 def get_size(
     repo_id: str, *, unit_bytes: int = DFLT_SIZE_UNIT_BYTES, repo_type: RepoType
 ) -> float:
@@ -302,7 +328,7 @@ class HfMapping(Mapping):
 
     def get_size(self, key: str, *, unit_bytes: int = DFLT_SIZE_UNIT_BYTES) -> float:
         """Get size (by default, in GiB) of an item from it's key (repo ID)"""
-        return get_size(key, unit_bytes=unit_bytes, repo_type=self.repo_type)
+        return get_size(_leaf_key(self, key), unit_bytes=unit_bytes, repo_type=self.repo_type)
 
     # Note: search method is dynamically created in __init__ with the correct signature
 

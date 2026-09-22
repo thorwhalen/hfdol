@@ -37,7 +37,7 @@ dependencies = [
 Homepage = "https://github.com/thorwhalen/hfdol"
 
 [project.optional-dependencies]
-testing = []
+testing = ["dol"]
 
 [tool.ruff]
 line-length = 88

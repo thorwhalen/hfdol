@@ -447,6 +447,54 @@ def test_parameterized_hf_mapping():
         assert mapping.search_func is not None
 
 
+def test_get_size_resolves_leaf_key_through_dol_wrapping():
+    """get_size() must see the leaf key when wrapped with a dol key codec.
+
+    Regression test for thorwhalen/hfdol#2 (get_size received the outer,
+    unmapped key). Network calls are stubbed so this runs offline.
+    """
+    from types import SimpleNamespace
+
+    import hfdol.base as hb
+    from hfdol.base import HfDatasets
+    from dol import KeyCodecs, wrap_kvs
+
+    seen = []
+
+    class FakeApi:
+        def dataset_info(self, *, repo_id, files_metadata=False):
+            seen.append(repo_id)
+            return SimpleNamespace(siblings=[SimpleNamespace(size=1024**3)])
+
+    original_get_hf_api = hb.get_size.__globals__["_get_hf_api"]
+    try:
+        hb.get_size.__globals__["_get_hf_api"] = lambda: FakeApi()
+
+        # Route B: class-wrap (KeyCodecs.prefixed)
+        Scoped = KeyCodecs.prefixed("ccmusic-database/")(HfDatasets)
+        s = Scoped()
+        seen.clear()
+        s.get_size("music_genre")
+        assert seen == ["ccmusic-database/music_genre"], seen
+
+        # Route A: instance-wrap (wrap_kvs)
+        w = wrap_kvs(
+            HfDatasets(),
+            id_of_key=lambda k: "ccmusic-database/" + k,
+            key_of_id=lambda k: k[len("ccmusic-database/") :],
+        )
+        seen.clear()
+        w.get_size("music_genre")
+        assert seen == ["ccmusic-database/music_genre"], seen
+
+        # Unwrapped: must be unaffected (regression check)
+        seen.clear()
+        HfDatasets().get_size("plain-org/dataset")
+        assert seen == ["plain-org/dataset"], seen
+    finally:
+        hb.get_size.__globals__["_get_hf_api"] = original_get_hf_api
+
+
 def test_dynamic_search_signatures():
     """Test that search methods automatically have the correct signatures."""
     from inspect import signature
