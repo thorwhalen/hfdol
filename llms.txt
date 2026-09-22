@@ -1,0 +1,22 @@
+# hfdol
+
+> Simple Mapping interface to HuggingFace
+
+
+## Pages
+
+- [hfdol](index.html.md): Simple Mapping interface to HuggingFace.
+- [API reference](api.html.md): | &#96;hfdol&#96;   | Huggingface interface   |
+- [hfdol](_autosummary/hfdol.html.md): Huggingface interface
+- [hfdol.base](_autosummary/hfdol.base.html.md): Base functionality for hfdol.
+- [hfdol.deploy](_autosummary/hfdol.deploy.html.md): Deploy webapps to HuggingFace Spaces.
+- [For AI agents](ai-agents.html.md): &#96;hfdol&#96; ships artifacts for coding agents alongside its code. This page lists
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-09-22 14:36 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
+
+## Optional
+
+- [hfdol.md](hfdol.md): Complete documentation in a single file.
+
+## Build
+
+- [build_info.json](build_info.json): build provenance (commit, version, tool versions, whether the docs match the package)

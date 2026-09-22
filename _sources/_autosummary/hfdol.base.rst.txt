@@ -1,0 +1,27 @@
+hfdol.base
+==========
+
+.. automodule:: hfdol.base
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ensure_dir
+      ensure_id
+      get_size
+      list_local_repos
+      sign_kwargs_with
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      HfDatasets
+      HfMapping
+      HfModels
+      HfPapers
+      HfSpaces
+      RepoType
+   

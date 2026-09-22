@@ -1,4 +1,0 @@
-hfdol.deploy
-============
-.. automodule:: hfdol.deploy
-   :members:

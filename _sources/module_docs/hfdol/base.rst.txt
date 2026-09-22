@@ -1,4 +1,0 @@
-hfdol.base
-==========
-.. automodule:: hfdol.base
-   :members:

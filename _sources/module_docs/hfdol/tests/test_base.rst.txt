@@ -1,4 +1,0 @@
-hfdol.tests.test_base
-=====================
-.. automodule:: hfdol.tests.test_base
-   :members:

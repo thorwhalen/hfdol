@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "built_at": "2026-09-22T14:36:31Z",
+  "package": {
+    "name": "hfdol",
+    "version": "0.1.20",
+    "display_name": "hfdol",
+    "source": "pyproject.toml"
+  },
+  "git": {
+    "available": true,
+    "commit": "d634c6bb261f8d7a3702e769bcade2c86c8d08a6",
+    "short_commit": "d634c6b",
+    "branch": "main",
+    "tags": [],
+    "dirty": false,
+    "remote_url": "https://github.com/thorwhalen/hfdol",
+    "commit_url": "https://github.com/thorwhalen/hfdol/commit/d634c6bb261f8d7a3702e769bcade2c86c8d08a6",
+    "error": null
+  },
+  "ci": {
+    "provider": "github",
+    "repository": "thorwhalen/hfdol",
+    "sha": "d634c6bb261f8d7a3702e769bcade2c86c8d08a6",
+    "sha_in_history": true,
+    "ref": "refs/heads/main",
+    "ref_name": "main",
+    "run_id": "35741246649",
+    "run_url": "https://github.com/thorwhalen/hfdol/actions/runs/35741246649",
+    "server_url": "https://github.com"
+  },
+  "tools": {
+    "epythet": "0.2.12",
+    "sphinx": "9.1.0",
+    "docutils": "0.22.4",
+    "python": "3.12.14"
+  },
+  "config": {
+    "theme": "auto",
+    "html_theme": "sphinxawesome_theme",
+    "accent": "#536000",
+    "mode": "auto",
+    "api_generator": "autosummary",
+    "ignore": [
+      "tests/",
+      "scrap/",
+      "examples/"
+    ],
+    "agent_outputs": true,
+    "aggregates": [
+      "md"
+    ],
+    "ai_artifacts": true,
+    "provenance": true,
+    "docs_dir": "docsrc"
+  },
+  "site": {
+    "modules_documented": 3,
+    "objects_documented": 20
+  },
+  "pypi": {
+    "checked": true,
+    "latest": "0.1.21",
+    "relation": "behind",
+    "error": null
+  },
+  "reproduce": "git clone https://github.com/thorwhalen/hfdol && cd hfdol\ngit checkout d634c6bb261f8d7a3702e769bcade2c86c8d08a6\npip install \"epythet==0.2.12\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "warnings": [],
+  "alignment": {
+    "aligned": false,
+    "notes": [
+      "The documented version (0.1.20) is behind the latest release on PyPI (0.1.21): `pip install hfdol` gives newer code than these docs describe."
+    ]
+  }
+}

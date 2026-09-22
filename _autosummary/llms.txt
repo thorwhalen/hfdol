@@ -1,0 +1,14 @@
+# hfdol
+
+> Simple Mapping interface to HuggingFace
+
+
+## Pages in this subsection
+
+- [hfdol](hfdol.html.md): Huggingface interface
+- [hfdol.base](hfdol.base.html.md): Base functionality for hfdol.
+- [hfdol.deploy](hfdol.deploy.html.md): Deploy webapps to HuggingFace Spaces.
+
+## Optional
+
+- [Top-level llms.txt](../llms.txt): Complete documentation index.
