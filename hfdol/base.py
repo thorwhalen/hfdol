@@ -328,7 +328,9 @@ class HfMapping(Mapping):
 
     def get_size(self, key: str, *, unit_bytes: int = DFLT_SIZE_UNIT_BYTES) -> float:
         """Get size (by default, in GiB) of an item from it's key (repo ID)"""
-        return get_size(_leaf_key(self, key), unit_bytes=unit_bytes, repo_type=self.repo_type)
+        return get_size(
+            _leaf_key(self, key), unit_bytes=unit_bytes, repo_type=self.repo_type
+        )
 
     # Note: search method is dynamically created in __init__ with the correct signature
 
